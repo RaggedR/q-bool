@@ -1,0 +1,624 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black,citecolor=blue!45!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\FinSet}{\cat{FinSet}}
+\newcommand{\Poly}{\cat{Poly}}
+\newcommand{\Cont}{\cat{Cont}}
+\newcommand{\Spc}{\cat{Spc}}
+\newcommand{\iso}{\mathrm{iso}}
+\newcommand{\con}{\mathrel{\vartriangleright}}
+\newcommand{\norm}[1]{\lvert #1 \rvert}
+\newcommand{\dd}{\,d}
+\newcommand{\Had}{\odot}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\List}{List}
+\DeclareMathOperator{\Bag}{Bag}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{verified}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{fails}}}
+
+\title{\bfseries Hypergeometric Series, Containerwise\\[0.4em]
+\large The missing column: superposition rather than convolution,
+and why the $q$-side is the honest one}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Hypergeometric series look alien to generating-function intuition, and this note
+argues that the reason is structural rather than notational: they do not live in the
+monoidal structure that \texttt{q-dirichlet.tex} tabulates. Four claims. (i) The
+obligatory $n!$ in ${}_pF_q$ is the $S_n$-quotient --- the notation is native to
+$\Bag$-world, which is why the geometric series sits outside it. (ii) The
+\emph{upstairs} parameters are containers, $1/(1-x)^a = \List^a$, but they are
+combined by the \emph{Hadamard} product --- superposition of structures on one set
+--- which is the categorical product in the species category and not a Day
+convolution at all. That is a missing \emph{column} of the table where
+\texttt{list-and-bag.tex} supplied a missing row. (iii) The \emph{downstairs}
+parameters are containerish only at $b = 1$, where $(1)_n = \norm{S_n}$; this is
+exactly why ${}_0F_{s-1}(\,;1,\dots,1;z)$ was the family for which
+\texttt{list-and-bag.tex} Thm.~5.1 was clean, and predicts that no such theorem
+exists for ${}_2F_1$. (iv) The defining property, rationality of $c_{n+1}/c_n$, is a
+level-by-level bijection once denominators are cleared. The comparison with Fomin's
+local rules (\texttt{lascoux/}) is \emph{narrower} than it first looks --- Fomin's
+rule is vertical and two-dimensional, a bare recurrence is horizontal and
+one-dimensional --- and \S5 states the comparison that survives: both are
+commutator identities categorified on a two-dimensional growth diagram, with the
+Wilf--Zeilberger pair supplying the second dimension. Finally: at $q$ the obligatory $(q;q)_n$ \emph{is}
+$\norm{\GL_n(\FF_q)}$ up to the torus factor, so basic hypergeometric series are more
+container-native than classical ones, and $q$-Vandermonde is already the Levi row of
+the decategorification table.
+\end{abstract}
+
+\section{What the notation is hiding}
+
+\begin{definition}[the notation]\label{def:pFq}
+With $(b)_n = b(b+1)\cdots(b+n-1) = \Gamma(b+n)/\Gamma(b)$ the rising factorial,
+\[
+  {}_pF_q\!\left(\begin{matrix} a_1,\dots,a_p \\ b_1,\dots,b_q\end{matrix}; z\right)
+  \;=\; \sum_{n \ge 0} c_n z^n,
+  \qquad
+  c_n \;=\; \frac{(a_1)_n \cdots (a_p)_n}{(b_1)_n\cdots(b_q)_n}\cdot\frac{1}{n!} .
+\]
+\end{definition}
+
+Three features of $c_n$ are usually presented as conventions. They are not, and the
+rest of this note is an account of what each one is.
+
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item There is always a spare $1/n!$, whatever $p$ and $q$ are. \hfill(\S2)
+  \item The $a_i$ and $b_j$ are evaluated at the \emph{same} $n$, and multiplied.
+        \hfill(\S3)
+  \item The $b_j$ appear in a denominator, with no companion construction upstairs.
+        \hfill(\S4)
+\end{enumerate}
+
+\section{The spare $n!$ is the $S_n$}
+
+\begin{proposition}[\emph{ours}, immediate]\label{prop:native}
+Definition~\ref{def:pFq} is a statement about exponential generating functions. Write
+$c_n = A_n/n!$ with $A_n = \prod_i (a_i)_n / \prod_j (b_j)_n$; then ${}_pF_q$ is the
+EGF of the sequence $(A_n)$. Hence hypergeometric notation is native to
+$\Bag$-world: the $n!$ is the $\norm{S_n}$ that a quotient container divides by, taken
+once, unconditionally.
+\end{proposition}
+
+This is the whole of (a). The $n!$ is not an extra factor bolted onto a product of
+Pochhammers --- it is the normalisation that says ``now read the result as a species
+cardinality''. Two consequences worth stating, because both look like notational
+quirks and are not:
+
+\begin{example}[the exponential is the emptiest one]\label{ex:exp}
+${}_0F_0(\,;\,;z) = \sum z^n/n! = e^z$. With no parameters at all, what is left is
+exactly the $S_n$-quotient. In the language of \texttt{list-and-bag.tex}, ${}_0F_0$
+\emph{is} $\Bag$.
+\end{example}
+
+\begin{example}[the geometric series is outside the notation]\label{ex:geo}
+$\sum z^n = 1/(1-z)$ is not any ${}_0F_{-1}$: the notation begins at $q = 0$. It is
+${}_1F_0(1;\,;z)$, with $(1)_n = n!$ upstairs cancelling the obligatory $n!$
+downstairs. So $\List$ can be written only by \emph{undoing} the quotient with a
+parameter, and the asymmetry between Examples~\ref{ex:exp} and \ref{ex:geo} is the
+$\List/\Bag$ asymmetry in notational form.
+\end{example}
+
+\begin{remark}\label{rem:struggle}
+If hypergeometric notation feels like it is doing something arbitrary, this is the
+first thing to fix. It is not a notation for power series. It is a notation for
+\emph{species}, in which the ``divide by $n!$'' step has been performed in advance and
+made invisible.
+\end{remark}
+
+\section{Upstairs: containers, combined by superposition}
+
+\subsection{A single parameter is a power of $\List$}
+
+\begin{proposition}\label{prop:pochlist}
+For $a \in \NN$ let $L^a$ be the species of $a$-tuples of linear orders: $L^a[n]$ is
+the set of ways to distribute $[n]$ into an ordered $a$-tuple of lists. Then
+\[
+  \norm{L^a[n]} = (a)_n,
+  \qquad\text{equivalently}\qquad
+  \sum_{n\ge0}(a)_n\frac{x^n}{n!} = \frac{1}{(1-x)^a} .
+\]
+As a container, $L^a = \List^{\times a}$, the $a$-fold product of $\List$ in the sense
+of \texttt{q-container.tex} Def.~(product of containers).
+\end{proposition}
+
+\begin{proof}
+$(1-x)^{-a} = \sum_n \binom{a+n-1}{n}x^n = \sum_n (a)_n x^n/n!$, and the species
+product decategorifies to multiplication of EGFs, so the EGF of $L^a$ is
+$(1/(1-x))^a$.
+\end{proof}
+
+\begin{example}\label{ex:a2n2}
+$a = 2$, $n = 2$: $(2)_2 = 2\cdot3 = 6$, and the pairs of lists on $\{1,2\}$ are
+$12\mid\varnothing$, $21\mid\varnothing$, $\varnothing\mid12$, $\varnothing\mid21$,
+$1\mid2$, $2\mid1$. \OK
+\end{example}
+
+So a rising factorial upstairs is a perfectly good container, and for integer $a$ the
+hypergeometric parameter is a \emph{dimension}: how many lists.
+
+\subsection{Several parameters: the Hadamard product}
+
+Feature (b) is the interesting one. In $c_n$ the factors $(a_1)_n,\dots,(a_p)_n$ are
+evaluated at one and the same $n$ and multiplied. That is \emph{not} the Cauchy
+product.
+
+\begin{definition}[Cartesian/Hadamard product of species]\label{def:had}
+For species $F, G$ let $(F \Had G)[n] = F[n] \times G[n]$, with the diagonal
+$S_n$-action. This is the categorical product in the functor category
+$[\FinSet^{\iso}, \Set]$, i.e.\ the \emph{pointwise} product of presheaves. Its effect
+on EGF coefficients is $A_n \mapsto A_n B_n$ with one $n!$ retained.
+\end{definition}
+
+\begin{proposition}[\emph{ours}]\label{prop:had-upstairs}
+The numerator of $c_n$ in Definition~\ref{def:pFq} is the EGF coefficient sequence of
+\[
+  L^{a_1} \Had L^{a_2} \Had \cdots \Had L^{a_p},
+\]
+and $c_n$ is that sequence read as an EGF. Hypergeometric notation is therefore:
+\emph{Hadamard-multiply powers of $\List$, then read the result in $\Bag$-world.}
+\end{proposition}
+
+Containerwise the Hadamard product is a pullback. Let $C = (S \con P)$ and
+$D = (T \con Q)$ be containers and let $\norm{\cdot} : S \to \NN$, $s \mapsto \norm{P s}$,
+be the arity map.
+
+\begin{definition}[Hadamard product of containers]\label{def:had-cont}
+$C \Had D = \bigl(S \times_{\NN} T \con (s,t)\mapsto P s\bigr)$, the fibre product of
+the arity maps, with positions inherited from either factor (they agree in
+cardinality by construction).
+\end{definition}
+
+\begin{remark}[the slogan]\label{rem:slogan}
+Cauchy product: \emph{split} the positions, one factor on each part. Hadamard
+product: \emph{share} the positions, both factors on all of them. Superposition, not
+concatenation.
+\end{remark}
+
+\subsection{Why this is a missing column and not a missing row}
+
+\begin{warning}[\emph{the central claim of this note}]\label{warn:column}
+The Hadamard product is not a Day convolution. Day convolution along
+$(\mathcal{A},\otimes)$ is the unique monoidal structure making Yoneda strong
+monoidal, and it uses $\otimes$ on objects of $\mathcal{A}$; the table of
+\texttt{q-dirichlet.tex} \S2 varies $\mathcal{A}$ and reads off $\sqcup$ (species
+product, EGF), $\times$ on $\NN_{>0}$ (Dirichlet), $\times$ on $\FinSet^{\iso}$
+(arithmetic product). Definition~\ref{def:had} is none of these: it is the
+\emph{categorical product} in the presheaf category, which exists for formal reasons
+and is not a convolution along anything.
+\end{warning}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lll@{}}
+\toprule
+monoidal structure on species & on positions & on coefficients \\
+\midrule
+Cauchy / Day along $\sqcup$ & split & $\sum_{i+j=n}\binom{n}{i}A_iB_j$ \\
+Dirichlet / Day along $\times$ & multiply & $\sum_{ij=n}A_iB_j$ \\
+\textbf{Hadamard / pointwise product} & \textbf{share} & $\boxed{A_nB_n}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{corollary}[\emph{ours} --- the answer to ``why do these feel alien''] \label{cor:alien}
+Generating-function intuition trained on the Day/Cauchy structure reads
+``multiply the series'' as ``concatenate the structures''. Hypergeometric parameters
+multiply in the other monoidal structure entirely, in which multiplying means
+overlaying two structures on one set of positions. The notation does not record which
+structure is in force, and so gives no clue that the usual intuition is inapplicable.
+\end{corollary}
+
+\begin{question}\label{q:had-q}
+What is the Hadamard product at $q$? Definition~\ref{def:had-cont} needs an arity map
+to pull back along; for $q$-containers the natural one is
+$\norm{\cdot} : S \to \NN$, $s \mapsto \dim P s$, and the fibre product is over
+dimension. Is the class of $q$-containers closed under it --- and does it
+decategorify to the coefficientwise product of $q$-series? This is cheap to check and
+is the first thing to do with this note.
+\end{question}
+
+\section{Downstairs: only $b = 1$ is a quotient}
+
+Feature (c). Dividing by $(b)_n$ coefficientwise is division in the Hadamard ring. A
+quotient \emph{container}, by contrast, requires a group that acts on positions, and
+then divides by its order.
+
+\begin{proposition}[\emph{ours}]\label{prop:downstairs}
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item $b = 1$: $(1)_n = n! = \norm{S_n}$, and $S_n$ acts on the $n$ positions.
+        Division by $(1)_n$ is the formation of a quotient container in Kock's sense
+        \cite{Kock} --- a polynomial functor over groupoids --- and is structural.
+  \item $b \ge 2$: $(b)_n = \norm{L^b[n]}$ is a cardinality, but no group of that
+        order acts canonically on anything in sight. Division by $(b)_n$ is
+        arithmetic in the coefficient ring, not a quotient.
+  \item $b \notin \NN$: $(b)_n = \Gamma(b+n)/\Gamma(b)$ is not a cardinality at all.
+\end{enumerate}
+\end{proposition}
+
+\begin{corollary}[why \texttt{list-and-bag.tex} Thm.~5.1 was clean]\label{cor:whyclean}
+The family $F_s(z) = \sum z^n/(n!)^s = {}_0F_{s-1}(\,;1,\dots,1;z)$ is exactly the
+hypergeometric family whose \emph{entire} denominator consists of case (i): every
+division it performs is an honest $S_n$-quotient. That is why the exponent in
+$\Gamma(\tfrac12)^{2-s}$ counts something --- it counts quotients taken --- and the
+statement has a container reading at all.
+\end{corollary}
+
+\begin{conjecture}[\emph{ours}, a prediction rather than a hope]\label{conj:no2F1}
+There is no analogue of \texttt{list-and-bag.tex} Thm.~5.1 for ${}_2F_1$ in which the
+answer is a power of a single $\Gamma$-value and the exponent counts a container
+construction. The Mellin transform of ${}_2F_1(a,b;c;-x^2)$ exists and is a ratio of
+four $\Gamma$'s (Barnes), but by Proposition~\ref{prop:downstairs}(ii) the
+$c$-dependence is not quotient data, so no exponent can be counting quotients.
+\end{conjecture}
+
+The point of recording Conjecture~\ref{conj:no2F1} is that it is the honest limit of
+the programme. The container reading explains why one family worked; it should also
+say which families cannot.
+
+\section{Local rules: the comparison, and its limits}
+
+\subsection{The recurrence as a bijection}
+
+\begin{definition}\label{def:hyp}
+A series $\sum c_n z^n$ is \emph{hypergeometric} when $c_{n+1}/c_n$ is a rational
+function of $n$. Definition~\ref{def:pFq} is the general solution:
+$c_{n+1}/c_n = \prod_i(n+a_i)\big/\bigl(\prod_j(n+b_j)\,(n+1)\bigr)$.
+\end{definition}
+
+Clear denominators. Writing $c_{n+1}/c_n = P(n)/Q(n)$,
+\begin{equation}\label{eq:localrule}
+  Q(n)\cdot c_{n+1} \;=\; P(n)\cdot c_n .
+\end{equation}
+
+\begin{proposition}[\emph{ours}]\label{prop:localrule}
+When $P$ and $Q$ take non-negative integer values on $\NN$ --- which happens exactly
+when all $a_i, b_j \in \NN$, the case of \S3--\S4 --- \eqref{eq:localrule} is a
+bijection statement: $Q(n)$ copies of the level-$(n+1)$ shapes are in bijection with
+$P(n)$ copies of the level-$n$ shapes.
+\end{proposition}
+
+It is tempting to stop here and say that a hypergeometric series is therefore a
+container presented by a local rule in the sense of \texttt{lascoux/}. That is what an
+earlier draft of this note said, and it is too strong. The next two subsections say
+what Fomin's rule actually is and then what survives of the comparison.
+
+\subsection{What Fomin's local rule is}
+
+A growth diagram is a grid whose lattice \emph{points} carry partitions, adjacent
+points differing by at most one box, and whose \emph{faces} carry a label
+$x \in \{0,1\}$ --- the dots of a permutation matrix. Three corners of a face plus the
+label determine the fourth:
+\[
+\begin{array}{ccc}
+ \rho & \!\!\text{\textemdash\textemdash}\!\! & \nu \\[-0.2em]
+ \mid & x & \mid \\[-0.2em]
+ \mu & \!\!\text{\textemdash\textemdash}\!\! & \lambda
+\end{array}
+\]
+Fill the left and top boundary with empty partitions, iterate over all faces, and the
+right and bottom boundaries carry the RSK tableaux of the permutation. The six cases,
+as formalised in \texttt{lascoux/lean/Fomin/LocalRule.lean} (thesis \S2.1.6):
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}clll@{}}
+\toprule
+ & condition & $\lambda$ & \\
+\midrule
+1 & $\mu=\nu=\rho$, $x=1$ & $\rho$ + box in row $0$ & the dot \\
+2 & $\mu=\nu=\rho$, $x=0$ & $\rho$ & nothing \\
+3 & $\mu=\rho$, $\nu\ne\rho$ & $\nu$ & shadow passes vertically \\
+4 & $\nu=\rho$, $\mu\ne\rho$ & $\mu$ & shadow passes horizontally \\
+5 & $\mu,\nu\ne\rho$, $\mu\ne\nu$ & $\mu \sqcup \nu$ & two shadows cross \\
+6 & $\mu,\nu\ne\rho$, $\mu=\nu$ & $\mu$ + box in row $\mathrm{diffRow}(\mu,\rho)+1$ & the bounce \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[all the content is in rule 6]\label{rem:bounce}
+Five of the six cases are free: two identities, two projections and a lattice join,
+needing nothing about Young diagrams beyond the lattice structure. Rule 6 is the only
+one that computes --- it must find the row the new box lands in --- and it is where
+Schensted bumping lives. The Lean file exhibits this asymmetry structurally:
+\texttt{diffRow} and the lemma that the bounce always has somewhere to land
+(\texttt{isAddableRow\_succ\_of\_addBox}) exist for rule 6 alone, while rule 5 needs
+only cardinality arithmetic on a join. In one sentence: \emph{the unbounded bumping
+cascade of Schensted insertion compresses into a single row index}, and the
+cascade is recovered by iteration over the grid rather than by recursion inside
+the rule.
+\end{remark}
+
+\begin{remark}[why \emph{vertical}]\label{rem:vertical}
+The rule has type $\ZZ_{\ge0}\times(D\alpha \cap D\beta) \to U\alpha \cap U\beta$. A
+container morphism $(S\con P) \to (T \con Q)$ is a pair: $f : S \to T$ on shapes and,
+\emph{contravariantly}, $g : \prod_{s} Q(f s) \to P s$ on positions. \emph{Vertical}
+means $f = \mathrm{id}$: the shapes are untouched and only the fibres move. Fomin's
+rule is vertical, and that is the precise content of the word \emph{local} --- the
+rule is uniform in $(\alpha,\beta)$, one formula with six case distinctions and no
+further dependence on which partitions one is at.
+\end{remark}
+
+\begin{remark}[what it decategorifies to]\label{rem:weyl}
+Counting the fibres of a vertical isomorphism gives
+$\norm{U\alpha \cap U\beta} = \delta_{\alpha\beta} + \norm{D\alpha\cap D\beta}$, which
+coefficientwise in $\ZZ[\text{Young}]$ is
+\[
+  DU - UD = I,
+\]
+Stanley's differential-poset axiom, i.e.\ the Weyl commutation relation. The
+$\delta_{\alpha\beta}$ is the label $x=1$ being legal at exactly one face shape. So
+Fomin's local rule is a \emph{bijection witnessing a commutator identity}, and the
+step-for-step correspondence between applications of the rule and applications of the
+commutation relation (thesis \S4.3.1) is the statement that the algebraic proof is the
+decategorification of the diagrammatic one.
+\end{remark}
+
+\subsection{The comparison that survives}
+
+\begin{warning}[the analogy is narrower than Proposition~\ref{prop:localrule} suggests]\label{warn:analogy}
+Two mismatches, both structural.
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item \textbf{Vertical versus horizontal.} Fomin's rule fixes the shapes and
+        bijects fibres (Remark~\ref{rem:vertical}). Equation~\eqref{eq:localrule}
+        relates level $n$ to level $n+1$: its shape map is the successor, not the
+        identity. It is a horizontal morphism, a different kind of arrow.
+  \item \textbf{Two dimensions versus one.} The grid has two directions, and that is
+        where the commutator of Remark~\ref{rem:weyl} comes from --- $U$ along one
+        axis, $D$ along the other. A bare recurrence is one-dimensional and has no
+        commutator to witness.
+\end{enumerate}
+\end{warning}
+
+The resolution is that the second dimension is available, but only once one leaves
+single recurrences for pairs.
+
+\begin{remark}[Wilf--Zeilberger supplies the missing direction]\label{rem:WZ}
+The method of \cite{AeqB} proves $\sum_k F(n,k) = \text{const}$ by exhibiting a
+certificate $G$ with
+\[
+  F(n+1,k) - F(n,k) \;=\; G(n,k+1) - G(n,k),
+\]
+a discrete divergence-free condition on $\NN^2$. Two variables, two directions, and an
+identity asserting that two ways round a face agree --- which is the shape of
+Remark~\ref{rem:weyl}, not the shape of \eqref{eq:localrule}. Gosper's algorithm,
+being univariate, has no analogue here at all; Zeilberger's bivariate extension is
+the one that matches.
+\end{remark}
+
+\begin{proposition}[\emph{ours} --- the honest form]\label{prop:honest}
+A Fomin local rule is a bijection witnessing $DU - UD = I$. A Wilf--Zeilberger pair is
+a bijection witnessing a telescoping identity. The common structure is: \emph{a
+commutator identity categorified on a two-dimensional growth diagram}. This is a
+comparison between Fomin's rules and WZ \emph{pairs}, and not between Fomin's rules
+and hypergeometric series as such.
+\end{proposition}
+
+\begin{question}\label{q:wz}
+Can a WZ certificate be read as an explicit container isomorphism --- not merely as
+evidence that a bijective proof exists, but as the bijection? Proposition~\ref{prop:honest}
+fixes the form the answer must take: a vertical morphism in $\Cont$ over the face data
+of a two-dimensional diagram, as in Remark~\ref{rem:vertical}.
+
+By Warning~\ref{warn:analogy} the calibration case must be laid out as a diagram and
+not as a recurrence. The natural choice is $q$-Vandermonde
+(Proposition~\ref{prop:qvan}), because its bijection is already known ---
+Corollary~\ref{cor:levi} --- so the test is sharp: \emph{does the WZ certificate for
+$q$-Vandermonde reproduce the subspace bijection?} If it does, WZ is a machine for
+producing container isomorphisms. If it does not, the two notions of ``local rule''
+are merely cousins and this section should end at Warning~\ref{warn:analogy}.
+\end{question}
+
+\begin{remark}[a second route to the missing trace]\label{rem:trace}
+Recorded because it arrives here from a direction independent of the containers work.
+Thesis \S4.3.1 states that each application of the local rule corresponds to an
+application of the commutation relation \emph{and} that each application of the
+rotation operator corresponds to the cylindric invariance of the trace. If the first
+correspondence is Remark~\ref{rem:weyl}, the second says the cylindric case requires a
+\emph{trace} on the container category --- which is the open
+missing-trace-on-$\con$ question from the containers work, reached from
+representation theory rather than from category theory. Two independent routes to one
+gap is worth more than one.
+\end{remark}
+
+\section{At $q$, the notation becomes honest}
+
+\subsection{The obligatory factor is an automorphism group order}
+
+With $(a;q)_n = \prod_{i=0}^{n-1}(1 - aq^i)$, basic hypergeometric series are
+\[
+  {}_p\phi_{q}\!\left(\begin{matrix}a_1,\dots,a_p\\ b_1,\dots,b_q\end{matrix};q,z\right)
+  = \sum_{n\ge0}
+  \frac{(a_1;q)_n\cdots(a_p;q)_n}{(q;q)_n\,(b_1;q)_n\cdots(b_q;q)_n}\,z^n ,
+\]
+and the obligatory factor is now $(q;q)_n$ rather than $n!$ \cite{GasperRahman}.
+
+\begin{proposition}\label{prop:qpoch-GL}
+$\displaystyle \norm{\GL_n(\FF_q)} = \prod_{i=0}^{n-1}(q^n - q^i)
+ = q^{\binom{n}{2}}\prod_{j=1}^{n}(q^j-1)
+ = (-1)^n q^{\binom{n}{2}}(q;q)_n .$
+\end{proposition}
+
+\begin{corollary}[\emph{ours}]\label{cor:qhonest}
+The obligatory $(q;q)_n$ of ${}_p\phi_q$ is $\norm{\GL_n(\FF_q)}$ up to a sign and the
+factor $q^{\binom{n}{2}}$. It is therefore the order of the automorphism group of the
+$n$-dimensional $q$-container, and dividing by it is a genuine quotient --- case (i)
+of Proposition~\ref{prop:downstairs}, not case (ii).
+\end{corollary}
+
+So feature (c), which is only accidentally structural at $q = 1$ (where it happens
+that $(1)_n = \norm{S_n}$), is structural at $q$ \emph{by construction}. And the
+discrepancy is exactly the familiar one:
+
+\begin{remark}[the torus again]\label{rem:torus}
+$q^{\binom{n}{2}}$ is the unipotent part and the remaining $(q-1)^n$ inside
+$(q;q)_n = \prod(1-q^j)$ is the torus. \texttt{q-dirichlet.tex} identifies the torus
+factor $(q-1)^{\dim}$ as precisely what makes the additive leg of Day convolution work
+and the multiplicative leg fail. It reappears here as the discrepancy between the
+$q$-Pochhammer and the group order, which is a reason to expect that the obstruction
+of that note and the normalisation of basic hypergeometric series are the same
+phenomenon seen twice.
+\end{remark}
+
+\noindent
+Note also that $\norm{\GL_n(\FF_q)}$ is the divisor in the $q$-Dirichlet series
+$\sum_{n\ge1}a_n n^{-s}/\norm{\GL_n(\FF_q)}$ of \texttt{q-dirichlet.tex}. The
+``spare $n!$'' of Definition~\ref{def:pFq} and that divisor are the same object at
+$q$.
+
+\subsection{$q$-Vandermonde is already in the table}
+
+Gaussian binomials are honest $q$-containers: $\qbin{n}{k}$ counts $k$-dimensional
+subspaces of $\FF_q^n$, so it is a shape-count, not a quotient, and
+\[
+  \qbin{n}{k} = \frac{(q;q)_n}{(q;q)_k\,(q;q)_{n-k}} .
+\]
+
+\begin{proposition}[$q$-Vandermonde]\label{prop:qvan}
+$\displaystyle \qbin{m+n}{r} = \sum_{k}\qbin{m}{k}\qbin{n}{r-k}\,q^{(m-k)(r-k)} .$
+\end{proposition}
+
+\begin{example}\label{ex:qvan}
+$m = n = r = 1$: left side $\qbin{2}{1} = 1+q$; right side
+$k=0$ gives $1\cdot1\cdot q^{1} = q$ and $k=1$ gives $1\cdot1\cdot q^{0} = 1$. \OK
+\end{example}
+
+\begin{corollary}[\emph{ours}]\label{cor:levi}
+Proposition~\ref{prop:qvan} is the Levi row of the decategorification table of
+\texttt{q-container.tex}: ``Day convolution along $\oplus$ (Levi) $\leftrightarrow$
+multiplication weighted by $q^{k(n-k)}$''. Its combinatorial content is the
+classification of an $r$-subspace of $\FF_q^{m+n}$ by its intersection pattern with a
+fixed $m$-dimensional summand, which is a container isomorphism over the dimension
+map. So the first non-trivial summation identity of the basic hypergeometric canon is
+a theorem already proved at the container level in that note.
+\end{corollary}
+
+\begin{corollary}[the thesis of \S6]\label{cor:thesis}
+Basic hypergeometric series are more container-native than classical ones. At $q = 1$
+the denominator is a quotient only in the single case $b = 1$; at $q$ it is an
+automorphism group order by construction, and the structure constants of the series
+are subspace counts. The $q$-deformation is not a complication of the classical
+theory here --- it is the setting in which the classical theory's conventions become
+statements.
+\end{corollary}
+
+\section{Where it stops}
+
+Everything above needs $a_i, b_j \in \NN$. For
+${}_2F_1(\tfrac12,-\tfrac13;\pi;z)$ there is no container anywhere near it, and its
+coefficients are not even rational.
+
+\begin{remark}[\emph{ours} --- $\Gamma$ interpolates past the containers]\label{rem:gamma-past}
+This is not a defect to be patched. \texttt{gamma.tex} \S1 characterises $\Gamma$ as
+the unique log-convex solution of $f(x+1) = xf(x)$ --- the smooth curve through the
+factorials. Transposed into the present language: hypergeometric parameters at
+non-negative integers are container data, and $\Gamma$ is what carries the apparatus
+to parameters at which no container exists. The analytic theory of ${}_pF_q$ is the
+analytic continuation, in its parameters, of a combinatorial theory. That is why the
+subject looks as though it came from nowhere, and it is the same boundary as the two
+obstructions of \texttt{list-and-bag.tex}: there the \emph{functional} $\int_\RR$ was
+not a container operation, here the \emph{parameters} are not container data.
+\end{remark}
+
+\begin{warning}\label{warn:preserve}
+The disagreement should be preserved rather than resolved. There is no useful sense in
+which a general ${}_pF_q$ is a container; there is a precise sense in which the
+integer-parameter ones are; and $\Gamma$ is the interpolation between. Claiming more
+than this --- that hypergeometric series ``are'' containers --- would be the error the
+rest of \texttt{q-bool/} is careful to avoid.
+\end{warning}
+
+\section{Next}
+
+\begin{enumerate}[nosep]
+  \item \textbf{Question~\ref{q:had-q}: the Hadamard product at $q$.} Cheapest item
+        here. Pull back along $\dim$, check closure, check that it decategorifies to
+        the coefficientwise product of $q$-series. If it does, the table of
+        \texttt{q-container.tex} gains a row and Warning~\ref{warn:column} gains its
+        $q$-analogue.
+  \item \textbf{Add the Hadamard column} to the table of \texttt{q-dirichlet.tex}
+        \S2, with Warning~\ref{warn:column}: the three rows there are Day
+        convolutions, and this is the structure that is not one.
+  \item \textbf{Question~\ref{q:wz}: WZ certificates as container isomorphisms.}
+        The highest-value item, and the one that connects to \texttt{lascoux/}. Start
+        with a single identity whose certificate is integral --- the $q$-Vandermonde
+        of Proposition~\ref{prop:qvan} has a known bijective proof, so it is the
+        calibration case: does the WZ certificate for it reproduce the subspace
+        bijection of Corollary~\ref{cor:levi}?
+  \item \textbf{Refute or confirm Conjecture~\ref{conj:no2F1}} by computing the
+        Mellin transform of ${}_2F_1(a,b;c;-x^2)$ and inspecting the
+        $c$-dependence. This bounds the programme and should be done before it is
+        extended.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{AeqB} Marko Petkov\v{s}ek, Herbert S.\ Wilf and Doron Zeilberger,
+\emph{$A=B$}, A.\ K.\ Peters, 1996. Gosper's algorithm, Zeilberger's algorithm, and
+the WZ method.
+
+\bibitem{BLL} Fran\c{c}ois Bergeron, Gilbert Labelle and Pierre Leroux,
+\emph{Combinatorial Species and Tree-like Structures}, Cambridge University Press,
+1998. The Cartesian product of species is \S2.1.
+
+\bibitem{Day} Brian Day, \emph{On closed categories of functors}, Reports of the
+Midwest Category Seminar IV, Lecture Notes in Math.\ 137, Springer, 1970.
+
+\bibitem{GasperRahman} George Gasper and Mizan Rahman, \emph{Basic Hypergeometric
+Series}, 2nd ed., Cambridge University Press, 2004.
+
+\bibitem{Joyal81} Andr\'e Joyal, \emph{Une th\'eorie combinatoire des s\'eries
+formelles}, Adv.\ Math.\ \textbf{42} (1981), 1--82.
+
+\bibitem{Kock} Joachim Kock, \emph{Data types with symmetries and polynomial functors
+over groupoids}, ENTCS \textbf{286} (2012), 351--365.
+
+\bibitem{Morrison} Kent E.\ Morrison, \emph{An introduction to $q$-species},
+Electron.\ J.\ Combin.\ \textbf{12} (2005), R62.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,401 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black,citecolor=blue!45!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\norm}[1]{\lvert #1 \rvert}
+\newcommand{\dd}{\,d}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{checked}}}
+
+\title{\bfseries $\Gamma$, ${}_0F_1$ and $J_0$\\[0.4em]
+\large A short introduction to everything \texttt{list-and-bag.tex} assumes,
+starting from $n!$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Four things are used without explanation in \texttt{list-and-bag.tex}: the Gamma
+function, the reflection formula, the hypergeometric notation ${}_0F_1$, and the
+Bessel function $J_0$. This note introduces them in that order, because each one
+needs the one before it. Nothing here is original and nothing here is hard; the only
+claim the note makes for itself is that it is the shortest path to the four.
+
+\section{$\Gamma$: the factorial, for non-integers}
+
+\subsection{The problem it solves}
+
+We want a function that agrees with $n!$ at the positive integers but is defined --- and
+smooth --- in between. Interpolating a sequence is not by itself a well-posed problem:
+infinitely many smooth curves pass through the points $1, 1, 2, 6, 24, \dots$. What
+picks one out is insisting on the \emph{recursion} rather than just the values.
+Factorial satisfies
+\[
+  (n+1)! = (n+1)\cdot n! ,
+\]
+so we ask for a function $f$ on $(0,\infty)$ with $f(1) = 1$ and
+$f(x+1) = x\,f(x)$ for all $x > 0$.
+
+That is still not enough --- one can perturb a solution by any function of period $1$ ---
+but it very nearly is.
+
+\begin{theorem}[Bohr--Mollerup]\label{thm:BM}
+There is exactly one function $f : (0,\infty) \to (0,\infty)$ with
+\[
+  f(1) = 1, \qquad f(x+1) = x f(x), \qquad \log f \text{ convex} .
+\]
+\end{theorem}
+
+\noindent
+Log-convexity is the mild extra demand that rules out the periodic wobbles. The unique
+solution is called $\Gamma$, and it is given by an integral.
+
+\subsection{The definition}
+
+\begin{definition}\label{def:gamma}
+For $\mathrm{Re}\,z > 0$,
+\[
+  \Gamma(z) \;=\; \int_0^\infty t^{\,z-1} e^{-t} \dd t .
+\]
+\end{definition}
+
+Two computations establish everything basic. First, integrating by parts with
+$u = t^{z}$ and $dv = -e^{-t}dt$:
+\[
+  \Gamma(z+1) = \int_0^\infty t^{z}e^{-t}\dd t
+  = \underbrace{\bigl[-t^z e^{-t}\bigr]_0^\infty}_{=\,0}
+    + z\int_0^\infty t^{z-1}e^{-t}\dd t
+  = z\,\Gamma(z) .
+\]
+Second, $\Gamma(1) = \int_0^\infty e^{-t}dt = 1$. Together these give, by induction,
+\begin{equation}\label{eq:factorial}
+  \boxed{\;\Gamma(n+1) = n! \quad\text{for } n \in \NN.\;}
+\end{equation}
+So $\Gamma$ is the factorial with its argument shifted by one. The shift is an
+accident of history and is permanently annoying; the thing to memorise is
+\eqref{eq:factorial}.
+
+\begin{remark}[why the integral, and not some formula]\label{rem:whyintegral}
+Definition~\ref{def:gamma} is not a clever trick for computing $n!$ --- it is
+\emph{why $\Gamma$ appears in this subject at all}. Read it right to left: the
+integral $\int_0^\infty t^n e^{-t}dt$ \emph{produces} $n!$ out of a power. Whenever a
+construction divides by $n!$ and you want to undo that, this integral is the tool,
+and that is exactly the role it plays in \texttt{list-and-bag.tex}~\S4: the Borel
+transform $\frac{1}{1-x} = \int_0^\infty e^{-t}e^{xt}dt$ is \eqref{eq:factorial}
+applied coefficient by coefficient.
+\end{remark}
+
+\subsection{The one value that matters here: $\Gamma(\tfrac12) = \sqrt{\pi}$}
+
+\begin{proposition}\label{prop:half}
+$\Gamma(\tfrac12) = \displaystyle\int_{\RR} e^{-u^2}\dd u = \sqrt{\pi}$.
+\end{proposition}
+
+\begin{proof}
+Put $t = u^2$ in Definition~\ref{def:gamma}, so $dt = 2u\,du$ and $t^{-1/2} = u^{-1}$:
+\[
+  \Gamma(\tfrac12) = \int_0^\infty t^{-1/2}e^{-t}\dd t
+  = \int_0^\infty u^{-1} e^{-u^2}\,2u \dd u
+  = 2\int_0^\infty e^{-u^2}\dd u
+  = \int_{\RR} e^{-u^2}\dd u .
+\]
+That the last integral is $\sqrt{\pi}$ is the Gaussian integral, proved by squaring it
+and passing to polar coordinates.
+\end{proof}
+
+This is worth pausing on, because it is the whole hinge of the other note.
+\emph{$\Gamma(\tfrac12)$ and the Gaussian integral are the same object.} The
+substitution $t = u^2$ is the only thing between them. So when
+\texttt{list-and-bag.tex} substitutes $-x^2$ into a generating function and
+integrates, it is not doing something to which $\Gamma$ is incidentally relevant: it
+is evaluating $\Gamma$ at a half-integer, by construction.
+
+\subsection{Outside the right half-plane}
+
+The integral of Definition~\ref{def:gamma} diverges for $\mathrm{Re}\,z \le 0$, but the
+recursion $\Gamma(z) = \Gamma(z+1)/z$ extends $\Gamma$ to all of $\CC$ except
+$z = 0, -1, -2, \dots$, where it has simple poles. The useful consequence:
+
+\begin{proposition}\label{prop:entire}
+$1/\Gamma$ is entire --- analytic on all of $\CC$, with zeros exactly at
+$0, -1, -2, \dots$.
+\end{proposition}
+
+This is the fact that licenses the proof of \texttt{list-and-bag.tex}
+Theorem~5.1. There the coefficients of $F_s$ are $\varphi(n) = \Gamma(n+1)^{-s}$, and
+Ramanujan's master theorem requires $\varphi$ to be analytic at a \emph{negative}
+argument, namely $\varphi(-\tfrac12) = \Gamma(\tfrac12)^{-s}$. Had $\Gamma$ itself
+been needed there instead of $1/\Gamma$, the pole structure would have obstructed it.
+
+\section{The reflection formula}
+
+\subsection{Statement}
+
+\begin{theorem}[Euler's reflection formula]\label{thm:reflect}
+For $z \notin \ZZ$,
+\[
+  \Gamma(z)\,\Gamma(1-z) \;=\; \frac{\pi}{\sin \pi z} .
+\]
+\end{theorem}
+
+The name: $z \mapsto 1-z$ reflects the complex plane in the vertical line
+$\mathrm{Re}\,z = \tfrac12$, and the formula says $\Gamma$ paired with its own
+reflection is elementary. Note the consistency check: the left side has poles at every
+integer (from $\Gamma(z)$ at $z \le 0$ and from $\Gamma(1-z)$ at $z \ge 1$), and so
+does $\pi/\sin\pi z$. \OK
+
+\subsection{Where it comes from}
+
+A sketch, because the mechanism is the same integral that appears in the other note.
+The Beta integral is
+\[
+  B(a,b) \;=\; \int_0^1 t^{a-1}(1-t)^{b-1}\dd t \;=\; \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} ,
+\]
+which one proves by writing $\Gamma(a)\Gamma(b)$ as a double integral and changing
+variables. Substituting $t = x/(1+x)$ turns it into an integral over $(0,\infty)$:
+\[
+  \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} \;=\; \int_0^\infty \frac{x^{a-1}}{(1+x)^{a+b}}\dd x .
+\]
+Now take $b = 1-a$, so that $\Gamma(a+b) = \Gamma(1) = 1$ and the denominator is just
+$1+x$:
+\begin{equation}\label{eq:keyint}
+  \Gamma(a)\Gamma(1-a) \;=\; \int_0^\infty \frac{x^{a-1}}{1+x}\dd x .
+\end{equation}
+Evaluating \eqref{eq:keyint} by contour integration (a keyhole around the cut on the
+positive axis) gives $\pi/\sin \pi a$, which is the theorem.
+
+\subsection{The case we need, and what it explains}
+
+Set $z = \tfrac12$ in Theorem~\ref{thm:reflect}. Then $1 - z = z$, $\sin \tfrac{\pi}{2} = 1$, and
+\begin{equation}\label{eq:halfrefl}
+  \boxed{\;\Gamma(\tfrac12)^2 \;=\; \pi.\;}
+\end{equation}
+Which we already knew from Proposition~\ref{prop:half}. The point is not the value but
+\emph{which} identity produces it, and that $\tfrac12$ is the fixed point of the
+reflection.
+
+\begin{remark}[the $\pi$ in the $\mathrm{List}$ row \emph{is} this formula]\label{rem:tie}
+Put $a = \tfrac12$ in \eqref{eq:keyint} and substitute $x = u^2$:
+\[
+  \Gamma(\tfrac12)\Gamma(\tfrac12) = \int_0^\infty \frac{x^{-1/2}}{1+x}\dd x
+  = \int_0^\infty \frac{2\dd u}{1+u^2} = \int_{\RR}\frac{\dd u}{1+u^2} .
+\]
+So $\int_\RR dx/(1+x^2) = \pi$ is not merely \emph{equal to} $\Gamma(\tfrac12)^2$ ---
+it is the reflection formula at $a = \tfrac12$, written in a different variable. This
+is the content of \texttt{list-and-bag.tex} Remark~5.2: the exponent $2$ in
+$\Gamma(\tfrac12)^2$ comes from reflection pairing $\Gamma(a)$ with $\Gamma(1-a)$, and
+the $x^2$ substitution is what sets $a = \tfrac12$, the one place where those two
+$\Gamma$-values coincide and the product becomes a \emph{square}. At any other
+exponent $x^m$ one gets $\Gamma(\tfrac1m)\Gamma(1-\tfrac1m)$ --- still elementary,
+but no longer a power of one number.
+\end{remark}
+
+\section{Hypergeometric notation: what ${}_0F_1$ means}
+
+\subsection{Rising factorials}
+
+\begin{definition}\label{def:poch}
+The \emph{Pochhammer symbol} (rising factorial) is
+\[
+  (b)_n \;=\; b(b+1)(b+2)\cdots(b+n-1) \;=\; \frac{\Gamma(b+n)}{\Gamma(b)},
+  \qquad (b)_0 = 1 .
+\]
+\end{definition}
+
+The only instance needed below is $b = 1$:
+\begin{equation}\label{eq:one-n}
+  (1)_n = 1\cdot 2 \cdots n = n! .
+\end{equation}
+
+\subsection{The notation}
+
+Hypergeometric notation is a uniform way of naming power series whose coefficient
+\emph{ratios} are rational in $n$. The general shape is
+\begin{equation}\label{eq:pFq}
+  {}_pF_q\!\left(\begin{matrix} a_1,\dots,a_p \\ b_1,\dots,b_q\end{matrix}; z\right)
+  \;=\; \sum_{n \ge 0}
+  \frac{(a_1)_n \cdots (a_p)_n}{(b_1)_n\cdots(b_q)_n}\,\frac{z^n}{n!} .
+\end{equation}
+Read it as: $p$ rising factorials upstairs, $q$ downstairs, and \emph{always} a
+spare $n!$ in the denominator. When $p = 0$ the upstairs list is empty and one writes
+a bare semicolon in its place: ${}_0F_q(\,;b_1,\dots,b_q;z)$. That is the only feature
+of the notation that looks like a typo and is not.
+
+\begin{example}[$p = q = 0$]\label{ex:exp}
+${}_0F_0(\,;\,;z) = \sum_n z^n/n! = e^z$. The exponential is the emptiest
+hypergeometric series.
+\end{example}
+
+\begin{example}[$p=0$, $q=1$, $b_1 = 1$]\label{ex:0F1}
+Using \eqref{eq:one-n},
+\[
+  {}_0F_1(\,;1;z) \;=\; \sum_{n\ge0}\frac{1}{(1)_n}\cdot\frac{z^n}{n!}
+  \;=\; \sum_{n \ge 0}\frac{z^n}{n!\cdot n!} \;=\; \sum_{n\ge0}\frac{z^n}{(n!)^2}.
+\]
+\end{example}
+
+So the single parameter $b_1 = 1$ is doing exactly one job: it contributes a second
+$n!$ to the denominator. Repeating it repeats that job, which is the whole reason the
+notation shows up in \texttt{list-and-bag.tex}:
+
+\begin{proposition}\label{prop:Fs}
+With $F_s(z) = \sum_{n\ge0} z^n/(n!)^s$,
+\[
+  F_s(z) \;=\; {}_0F_{s-1}\bigl(\,;\underbrace{1,\dots,1}_{s-1};z\bigr) .
+\]
+In particular $F_1 = {}_0F_0 = e^z$, and $F_2 = {}_0F_1(\,;1;z)$.
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:pFq} with $p=0$ and all $b_i = 1$, the $n$-th coefficient is
+$1/\bigl((1)_n^{\,s-1}\, n!\bigr) = 1/(n!)^{s-1}n! = 1/(n!)^s$ using \eqref{eq:one-n}.
+\end{proof}
+
+\begin{remark}\label{rem:whyF0}
+$F_0(z) = \sum z^n = 1/(1-z)$ is \emph{not} of the form ${}_0F_{-1}$ --- the
+notation starts at $s = 1$. In hypergeometric terms $F_0$ is
+${}_1F_0(1;\,;z)$: one parameter upstairs, $(1)_n = n!$, cancelling the obligatory
+$n!$ downstairs. The geometric series sits on the other side of the notation from the
+exponential, which is a small notational echo of the $\mathrm{List}$/$\mathrm{Bag}$
+distinction the other note is about.
+\end{remark}
+
+\section{$J_0$: the Bessel function, and why it is $F_2$}
+
+\subsection{Definition}
+
+\begin{definition}\label{def:J0}
+The Bessel function of the first kind of order zero is
+\[
+  J_0(w) \;=\; \sum_{k \ge 0} \frac{(-1)^k}{(k!)^2}\Bigl(\frac{w}{2}\Bigr)^{2k} .
+\]
+\end{definition}
+
+It is the solution of $w^2 y'' + w y' + w^2 y = 0$ regular at the origin, and it turns
+up whenever a problem has circular symmetry --- the vibration of a drumhead, the
+diffraction pattern of a round aperture. For present purposes none of that matters;
+only the series does.
+
+\subsection{The identification}
+
+\begin{proposition}\label{prop:J0}
+$F_2(-x^2) = J_0(2x)$, and $F_2(z) = I_0(2\sqrt{z})$ where $I_0$ is the modified
+Bessel function (Definition~\ref{def:J0} without the $(-1)^k$).
+\end{proposition}
+
+\begin{proof}
+Substitute $w = 2x$ in Definition~\ref{def:J0}: the $(w/2)^{2k}$ becomes $x^{2k}$, so
+\[
+  J_0(2x) = \sum_{k\ge0}\frac{(-1)^k x^{2k}}{(k!)^2}
+          = \sum_{k\ge0}\frac{(-x^2)^k}{(k!)^2}
+          = F_2(-x^2)
+\]
+by Example~\ref{ex:0F1}. The halving in Definition~\ref{def:J0} is precisely why the
+argument is $2x$ and not $x$.
+\end{proof}
+
+So the chain of names in \texttt{list-and-bag.tex} unwinds as:
+\[
+  F_2(z) = \sum \frac{z^n}{(n!)^2}
+  \;\xrightarrow[\text{Prop.~\ref{prop:Fs}}]{}\; {}_0F_1(\,;1;z)
+  \;\xrightarrow[\text{Prop.~\ref{prop:J0}}]{}\; J_0(2x) \text{ at } z = -x^2 .
+\]
+Three notations, one series. The reason to mention the third at all is that $J_0$ has
+a classical integral that the other two do not advertise:
+\begin{equation}\label{eq:J0int}
+  \int_0^\infty J_0(t)\dd t = 1
+  \qquad\Longrightarrow\qquad
+  \int_{\RR} J_0(2x)\dd x = 1 ,
+\end{equation}
+which is the $s = 2$ case of the theorem, and equals $\Gamma(\tfrac12)^{2-2} = 1$. \OK
+
+\subsection{The convergence caveat, concretely}
+
+For large real $w$,
+\[
+  J_0(w) \;\sim\; \sqrt{\frac{2}{\pi w}}\,\cos\!\Bigl(w - \frac{\pi}{4}\Bigr) ,
+\]
+so $J_0$ oscillates with amplitude decaying only like $w^{-1/2}$. That is too slow for
+absolute convergence --- $\int \norm{J_0}$ diverges --- but fast enough, with the sign
+changes, for \eqref{eq:J0int} to hold conditionally. This is the first point in the
+family $F_s$ at which the integral stops being an ordinary convergent integral, and it
+is why \texttt{list-and-bag.tex} Remark~5.3 damps by $e^{-\varepsilon x}$ rather than
+integrating directly.
+
+Beyond $s = 2$ it gets worse in a specific way. The oscillation of
+${}_0F_{s-1}(\,;1,\dots,1;-x^2)$ is not in $x$ but in $x^{2/s}$, so for $s \ge 3$ the
+function is not even \emph{periodic} in $x$ --- there is no period to feed to an
+oscillatory quadrature rule, and the integral exists only in the regularised
+(Mellin/Abel) sense. The $s = 2$ case is the last one where a classical integral
+formula like \eqref{eq:J0int} is available, which is why it is the last one verified
+numerically in the other note.
+
+\section{Where each of these is used}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llp{0.49\textwidth}@{}}
+\toprule
+object & here & role in \texttt{list-and-bag.tex} \\
+\midrule
+$\Gamma(n+1) = n!$ & \eqref{eq:factorial} & the divisor that distinguishes
+$\mathrm{Bag}$ from $\mathrm{List}$ \\
+$\int_0^\infty t^n e^{-t}dt = n!$ & Rem.~\ref{rem:whyintegral} & the Borel transform
+of \S4 --- the de-quotienting map \\
+$\Gamma(\tfrac12) = \sqrt{\pi}$ & Prop.~\ref{prop:half} & the Gaussian integral; the
+$\mathrm{Bag}$ row \\
+$1/\Gamma$ entire & Prop.~\ref{prop:entire} & licenses $\varphi(-\tfrac12)$ in the
+proof of Thm.~5.1 \\
+$\Gamma(a)\Gamma(1-a) = \pi/\sin\pi a$ & Thm.~\ref{thm:reflect} & the exponent $2$ in
+$\Gamma(\tfrac12)^{2-s}$; Rem.~5.2 \\
+$a = \tfrac12$ self-dual & \eqref{eq:halfrefl}, Rem.~\ref{rem:tie} & why the
+\emph{pair} container $x^2$ and no other power \\
+${}_0F_{s-1}$ & Prop.~\ref{prop:Fs} & a name for ``divide by $n!$ exactly $s$ times'' \\
+$J_0(2x) = F_2(-x^2)$ & Prop.~\ref{prop:J0} & makes $s=2$ numerically checkable \\
+$\int_0^\infty J_0 = 1$ & \eqref{eq:J0int} & the $s=2$ value, $\Gamma(\tfrac12)^0$ \\
+$J_0 \sim w^{-1/2}\cos$ & \S4.3 & where convergence stops, and why \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Further reading}
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[Artin, \emph{The Gamma Function} (1931).] Thirty-nine pages, and still the best
+introduction. Theorem~\ref{thm:BM} is its spine.
+\item[Andrews, Askey, Roy, \emph{Special Functions} (1999).] Chapters 1--2 for
+$\Gamma$, $B$ and reflection; Chapter 4 for \eqref{eq:pFq}. The standard modern
+reference.
+\item[Whittaker and Watson, \emph{A Course of Modern Analysis}.] Chapter XII for
+$\Gamma$, XVII for Bessel. Where to look when a formula is needed and not understood.
+\end{description}
+
+\end{document}

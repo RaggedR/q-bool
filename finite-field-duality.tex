@@ -1,0 +1,1304 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tikz-cd}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\dual}[1]{#1^{*}}
+\newcommand{\perpp}{^{\perp}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\FinSet}{\cat{FinSet}}
+\newcommand{\Bool}{\cat{Bool}}
+\newcommand{\FinBool}{\cat{FinBool}}
+\newcommand{\CABA}{\cat{CABA}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\FinVect}{\cat{FinVect}}
+\newcommand{\Stone}{\cat{Stone}}
+\newcommand{\LinComp}{\cat{LinComp}}
+\newcommand{\PG}{\mathrm{PG}}
+\newcommand{\op}{\mathrm{op}}
+\DeclareMathOperator{\disc}{disc}
+\DeclareMathOperator{\Gal}{Gal}
+\DeclareMathOperator{\Id}{Id}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Ob}{Ob}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Sub}{Sub}
+\DeclareMathOperator{\Ind}{Ind}
+\DeclareMathOperator{\Pro}{Pro}
+\DeclareMathOperator{\Spec}{Spec}
+\DeclareMathOperator{\PGL}{PGL}
+\DeclareMathOperator{\PGammaL}{P\Gamma L}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\Sp}{Sp}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+
+\title{\bfseries What Replaces the Inner Product over a Finite Field\\[0.4em]
+\large and what the opposite category of linear algebra is}
+\author{Robin Langer \and Claude}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Part~I asks what survives of the inner product when the ground field is finite. Separating
+\emph{nondegeneracy} from \emph{positive-definiteness}, we find the first survives in
+abundance and the second cannot even be stated; what is lost is the orthogonal splitting
+$V = W \perp W\perpp$, and what is gained is isotropy, hence self-dual codes, polar
+geometries and the finite classical groups.
+
+Part~II asks a categorical question with the same shape. The opposite of the category of
+sets is the category of complete atomic Boolean algebras. What, then, is the opposite of
+the category of vector spaces over $\FF_q$? The answer forks: as a bare category
+$\FinVect_q$ is self-dual, but if one deforms the \emph{recipe} behind $\Set^{\op} \simeq
+\CABA$ --- take subobject lattices --- one lands on projective geometry, whose
+anti-automorphisms are classified by exactly the three families of forms found in Part~I.
+The two halves of the document turn out to be one theorem seen twice --- and, by
+Piron's and Sol\`er's reconstruction theorems, a third time, as the list of possible quantum
+mechanics, the symplectic case being excluded by precisely the definiteness Part~I is about
+losing.
+
+Part~III takes $q \to 1$. Isotropy vanishes, the polarity $W \mapsto W\perpp$ becomes
+Boolean complementation, projective geometry becomes the Boolean lattice, and we recover
+$\Set^{\op} \simeq \CABA$. We also separate the field with one element from the prime at
+infinity, which are commonly and productively confused.
+
+\medskip
+\noindent\emph{Everything is defined from scratch. A reader who knows what a set is can
+read this straight through.}
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+\part{Forms over a finite field}
+
+\section{The mishnah: what ``naturally isomorphic'' is doing here}
+
+\subsection{The starting objects}
+
+\begin{definition}[Field]
+A \emph{field} $k$ is a set with two operations $+$ and $\cdot$, both associative and
+commutative, with $\cdot$ distributing over $+$, with additive identity $0$ and
+multiplicative identity $1 \neq 0$, such that every element has an additive inverse and
+every nonzero element has a multiplicative inverse. Examples: $\QQ$, $\RR$, $\CC$, and for
+each prime $p$ the set $\FF_p = \ZZ/p\ZZ$ of integers modulo $p$.
+\end{definition}
+
+\begin{definition}[Finite field]
+For each prime power $q = p^{e}$ there is, up to isomorphism, exactly one field with $q$
+elements, written $\FF_q$. Its \emph{characteristic} is $p$, meaning $\underbrace{1 + \cdots
++ 1}_{p} = 0$. Its multiplicative group $\FF_q^{\times} = \FF_q \setminus \{0\}$ is cyclic
+of order $q - 1$. No field has a number of elements that is not a prime power.
+\end{definition}
+
+\begin{definition}[Vector space, linear map, dual]
+A \emph{vector space} over $k$ is an abelian group $V$ with a scalar multiplication
+$k \times V \to V$ satisfying the usual axioms. A \emph{linear map} $f : V \to W$ satisfies
+$f(u+v) = f(u)+f(v)$ and $f(\lambda v) = \lambda f(v)$. The \emph{dual space} is
+\[
+  \dual{V} \;=\; \Hom_k(V, k) \;=\; \{\text{linear maps } V \to k\},
+\]
+itself a vector space. If $\dim V = n < \infty$ then $\dim \dual{V} = n$, so
+$V \cong \dual{V}$ --- but only after choosing a basis.
+\end{definition}
+
+\begin{definition}[Bilinear form]
+A \emph{bilinear form} on a $k$-vector space $V$ is a map $\ip{-}{-} : V \times V \to k$
+linear in each argument separately. It is \emph{symmetric} if $\ip{v}{w} = \ip{w}{v}$,
+\emph{alternating} if $\ip{v}{v} = 0$ for all $v$, and \emph{nondegenerate} if
+$\ip{v}{w} = 0$ for all $w$ forces $v = 0$.
+\end{definition}
+
+\begin{definition}[Gram matrix]
+Given a basis $e_1, \dots, e_n$ of $V$, the \emph{Gram matrix} is
+$G = (\ip{e_i}{e_j})_{i,j}$. The form is nondegenerate iff $\det G \neq 0$. Changing basis
+by an invertible $P$ replaces $G$ by $P^{\mathsf{T}} G P$, so $\det G$ changes by a nonzero
+square.
+\end{definition}
+
+\subsection{The two ingredients of an inner product}
+
+Let $V$ be a finite-dimensional complex inner product space. The form gives a map
+\[
+  \flat : V \longrightarrow \dual{V}, \qquad v \longmapsto \ip{-}{v},
+\]
+conjugate-linear (or linear into the conjugate dual $\overline{V}^{*}$, depending on
+convention), and it is an isomorphism because the form is \emph{nondegenerate}.
+Positive-definiteness --- the requirement $\ip{v}{v} > 0$ for $v \neq 0$ --- is sufficient
+for nondegeneracy but by no means necessary. So the isomorphism $V \cong \dual{V}$ consumes
+only a fraction of what an inner product supplies.
+
+Two remarks on the word ``natural'', both of which sharpen the question. (Naturality is
+defined precisely in \S\ref{sec:cats}; the reader may take the following on trust for now
+and return.)
+
+\begin{remark}
+There is no natural transformation $\Id \Rightarrow (-)^{*}$ on finite-dimensional vector
+spaces: $(-)^{*}$ is contravariant, so the statement does not typecheck as naturality. What
+one has is \emph{canonicity relative to a chosen form}, which has exactly the same epistemic
+status as a chosen basis. The genuinely natural isomorphism is $V \cong V^{**}$.
+\end{remark}
+
+\begin{remark}\label{rem:ordering}
+Consequently the right question is not ``can we define an inner product over $\FF_q$?'' but:
+\emph{which of the two ingredients survives?} Nondegeneracy is pure linear algebra and
+survives. Definiteness is a statement about an \emph{ordering} of the ground field, and
+$\FF_q$ admits none compatible with its arithmetic: in an ordered field $1 > 0$ forces
+$1 + 1 + \cdots > 0$, whereas in $\FF_p$ the sum of $p$ copies of $1$ is $0$.
+\end{remark}
+
+\section{What can be defined over $\FF_q$}\label{sec:forms}
+
+Three families of nondegenerate forms exist, and --- unlike over $\RR$ or $\CC$ --- all
+three are classified completely. Finite fields are, in this respect, \emph{nicer} than the
+classical ground fields.
+
+\subsection{Symmetric bilinear and quadratic forms}
+
+\begin{definition}[Isometry]
+Two forms $(V, \ip{-}{-}_V)$ and $(W, \ip{-}{-}_W)$ are \emph{isometric} if there is a linear
+isomorphism $f : V \to W$ with $\ip{f(u)}{f(v)}_W = \ip{u}{v}_V$. The \emph{isometry group}
+of a form is the group of self-isometries.
+\end{definition}
+
+\begin{definition}[Discriminant]
+For a nondegenerate symmetric form with Gram matrix $G$, the \emph{discriminant} is the class
+of $\det G$ in $k^{\times}/(k^{\times})^{2}$. By the change-of-basis rule above this is
+independent of the basis.
+\end{definition}
+
+For $q$ odd, $\FF_q^{\times}$ is cyclic of even order $q-1$, so squares have index $2$ and
+$\FF_q^{\times}/(\FF_q^{\times})^{2} \cong \ZZ/2$.
+
+\begin{theorem}[Classification, $q$ odd]
+Nondegenerate symmetric bilinear forms on $\FF_q^{n}$ are classified up to isometry by the
+discriminant, an element of $\FF_q^{\times}/(\FF_q^{\times})^{2} \cong \ZZ/2$. There are
+exactly \emph{two} isometry classes in each dimension.
+\end{theorem}
+
+Compare: over $\CC$ there is exactly one class in each dimension (Gram matrix $I$); over
+$\RR$, Sylvester's law of inertia gives $n+1$ classes indexed by signature. Finite fields sit
+strictly between, retaining a vestigial ghost of signature of size~$2$. The isometry groups
+are the orthogonal groups $O_n^{+}(q)$ and $O_n^{-}(q)$.
+
+\begin{remark}[Characteristic two]
+In characteristic $2$ the symmetric and alternating conditions collide, since $x = -x$. The
+correct object is then the \emph{quadratic form} $Q : V \to k$ (satisfying $Q(\lambda v) =
+\lambda^{2}Q(v)$ and with $B(x,y) = Q(x+y) - Q(x) - Q(y)$ bilinear) rather than its
+\emph{polarisation} $B$, which is alternating and carries strictly less information. Read
+everything below about symmetric forms with $q$ odd unless stated otherwise.
+\end{remark}
+
+\subsection{Alternating (symplectic) forms}
+
+Nondegenerate alternating forms exist only in even dimension, and there is exactly \emph{one}
+up to isometry: an orthogonal sum of hyperbolic planes (Definition~\ref{def:hyp}). The
+isometry group is the symplectic group $\Sp_{2n}(q)$. The classification is even coarser than
+over $\CC$: symplectic geometry has no local invariants at all.
+
+\subsection{Hermitian forms: the honest analogue}
+
+This is the closest finite-field relative of the complex inner product.
+
+\begin{definition}[Galois group, Frobenius]
+For a field extension $L \supseteq k$, the \emph{Galois group} $\Gal(L/k)$ is the group of
+field automorphisms of $L$ fixing $k$ pointwise. For finite fields, $\Gal(\FF_{q^{d}}/\FF_q)$
+is cyclic of order $d$, generated by the \emph{Frobenius} $\sigma : x \mapsto x^{q}$.
+\end{definition}
+
+Complex conjugation is the nontrivial element of $\Gal(\CC/\RR)$, a group of order two. The
+finite analogue is immediate: take $\FF_{q^{2}} \supset \FF_q$, whose Galois group is
+generated by $\sigma : x \mapsto x^{q}$, an involution ($\sigma^{2} = \mathrm{id}$ since
+$x^{q^{2}} = x$ on $\FF_{q^{2}}$) with fixed field exactly $\FF_q$ (the roots of $x^{q} = x$).
+
+\begin{definition}[Semilinear, sesquilinear, Hermitian]\label{def:sesq}
+Let $\sigma$ be a field automorphism of $L$. A map $f$ is \emph{$\sigma$-semilinear} if
+$f(u+v) = f(u)+f(v)$ and $f(\lambda v) = \sigma(\lambda) f(v)$. A
+\emph{$\sigma$-sesquilinear form} is $\ip{-}{-} : V \times V \to L$ linear in the first
+argument and $\sigma$-semilinear in the second. It is \emph{Hermitian} if $\sigma$ is an
+involution and $\ip{w}{v} = \sigma\ip{v}{w}$.
+\end{definition}
+
+\begin{proposition}
+For a Hermitian form over $\FF_{q^{2}}$ and any $v \in V$ we have $\ip{v}{v}^{q} = \ip{v}{v}$,
+hence $\ip{v}{v} \in \FF_q$.
+\end{proposition}
+
+That is: \emph{the norm is always real}, exactly as over $\CC$. Moreover there is exactly one
+nondegenerate Hermitian form per dimension up to isometry, with Gram matrix $I$; the isometry
+group is the unitary group $U_n(q)$. Every structural feature of the complex inner product is
+reproduced save one: $\FF_q$ is not ordered, so ``$\ip{v}{v} > 0$'' is meaningless.
+
+Together with $\GL_n(q)$, these isometry groups are the \emph{finite classical groups}. The
+question ``what replaces the inner product over $\FF_q$?'' is therefore an entrance to the
+classification of finite simple groups.
+
+\section{The objection: what actually breaks}\label{sec:breaks}
+
+Nondegeneracy buys $V \cong \dual{V}$. It does \emph{not} buy the orthogonal splitting.
+
+\begin{definition}[Orthogonal complement, isotropy]
+For a subspace $W \subseteq V$ put $W\perpp = \{v \in V : \ip{v}{w} = 0 \ \forall w \in W\}$.
+A vector $v \neq 0$ is \emph{isotropic} if $\ip{v}{v} = 0$; a subspace is \emph{totally
+isotropic} if the form vanishes identically on it; a form is \emph{anisotropic} if it has no
+isotropic vectors.
+\end{definition}
+
+If $v$ is isotropic then $v \in \langle v\rangle \cap \langle v\rangle\perpp$, so $V \neq
+\langle v\rangle \oplus \langle v\rangle\perpp$. Gram--Schmidt fails: one cannot normalise a
+vector of norm zero, nor divide by it. Orthogonal projection, least squares and the analytic
+spectral theorem fail with it. There is no norm, no metric, no completeness, no analysis.
+
+Worse --- or better --- isotropy is unavoidable.
+
+\begin{theorem}[Chevalley--Warning, quadratic case]
+Every quadratic form over $\FF_q$ in $n \geq 3$ variables has a nontrivial zero. Consequently
+an anisotropic quadratic space over $\FF_q$ has dimension at most $2$.
+\end{theorem}
+
+Over $\RR$, anisotropic spaces exist in every dimension --- that is precisely what
+positive-definiteness means. Over $\FF_q$ they are confined to dimension $\leq 2$.
+
+What does survive, from nondegeneracy alone, is the numerical duality:
+\[
+  \dim W + \dim W\perpp = \dim V, \qquad (W\perpp)\perpp = W .
+\]
+\emph{One keeps the duality and loses the splitting.} This sentence is the whole of Part~I in
+compressed form, and Part~II is its categorical restatement.
+
+\section{Attempted resolution: Witt's theory}
+
+\begin{definition}[Hyperbolic plane]\label{def:hyp}
+The \emph{hyperbolic plane} $\HH$ has basis $e, f$ with $\ip{e}{e} = \ip{f}{f} = 0$ and
+$\ip{e}{f} = 1$. It is nondegenerate and contains isotropic vectors by construction.
+\end{definition}
+
+\begin{theorem}[Witt decomposition]
+Every nondegenerate space decomposes as
+\[
+  V \;\cong\; \underbrace{\HH \perp \cdots \perp \HH}_{m} \;\perp\; V_{\mathrm{an}},
+\]
+with $V_{\mathrm{an}}$ anisotropic and unique up to isometry. The integer $m$ is the
+\emph{Witt index}, the common dimension of the maximal totally isotropic subspaces.
+\end{theorem}
+
+\begin{theorem}[Witt extension]
+Any isometry between subspaces of a nondegenerate space extends to an isometry of the whole
+space.
+\end{theorem}
+
+Witt extension replaces the statement that the unitary group acts transitively on orthonormal
+frames: the isometry group acts transitively on isometric configurations. Over $\FF_q$, since
+$\dim V_{\mathrm{an}} \leq 2$, finite quadratic spaces are \emph{almost entirely hyperbolic}.
+A situation that from the $\CC$ side looks maximally degenerate is in fact the source of all
+the interesting combinatorics.
+
+\section{\emph{Mai nafka minah}: what changes in practice}
+
+\subsection{Coding theory and self-duality}
+
+\begin{definition}[Linear code]
+A \emph{linear code} of length $n$ over $\FF_q$ is a subspace $C \subseteq \FF_q^{n}$. Its
+\emph{dual} is $C\perpp$ taken with respect to the standard bilinear form $\sum_i x_i y_i$.
+\end{definition}
+
+\emph{Self-dual} codes, $C = C\perpp$, exist --- the extended binary Golay code $[24,12,8]$,
+the hexacode over $\FF_4$ --- and they are the most beautiful objects in the subject. Over
+$\RR$ with a positive-definite form this is flatly impossible: $W = W\perpp$ forces $W = 0$.
+Self-duality is a gift of isotropy.
+
+\begin{warning}
+Self-duality is not special to finite fields; it is special to \emph{indefinite or
+unordered} ground fields. Over $\CC$ with the \emph{bilinear} (not Hermitian) form
+$x_1y_1 + x_2y_2$, the line $\langle (1,i)\rangle \subset \CC^{2}$ satisfies $W = W\perpp$.
+What is special about $\FF_q$ is that Chevalley--Warning makes isotropy \emph{unavoidable}
+and abundant.
+\end{warning}
+
+\subsection{Finite geometry}
+
+The totally isotropic subspaces of a nondegenerate form, ordered by inclusion, form a
+\emph{polar space}: generalised quadrangles and their higher analogues, the geometries on
+which the classical groups act. Under positive-definiteness this geometry is empty.
+
+\subsection{Quantum error correction}
+
+Stabiliser codes are totally isotropic subspaces of $\FF_2^{2n}$ under the standard symplectic
+form. The requirement that stabiliser generators commute is \emph{exactly} the isotropy
+condition, and the quotient $C\perpp/C$ carries the logical operators. Symplectic
+$\FF_2$-geometry is the native language of the Clifford group.
+
+\section{Where the analysis actually lives}\label{sec:fourier}
+
+If one wants Fourier analysis, the productive move is to stop trying to place an inner product
+on $\FF_q^{n}$ and place it instead on the $\CC$-vector space of functions:
+\[
+  \ip{f}{g} \;=\; \sum_{x \in \FF_q^{n}} f(x)\,\overline{g(x)},
+  \qquad f, g : \FF_q^{n} \to \CC .
+\]
+This is a genuine positive-definite Hermitian inner product.
+
+\begin{definition}[Additive character]
+An \emph{additive character} of $\FF_q$ is a group homomorphism $\psi : (\FF_q, +) \to
+(\CC^{\times}, \cdot)$. For $\FF_p$ one may take $\psi(x) = e^{2\pi i x/p}$; in general
+$\psi(x) = e^{2\pi i \,\mathrm{Tr}(x)/p}$ with $\mathrm{Tr} : \FF_q \to \FF_p$ the trace.
+\end{definition}
+
+Fixing a nontrivial $\psi$, the functions $e_y(x) = \psi\!\left(\sum_i x_i y_i\right)$, for
+$y \in \FF_q^{n}$, form an orthogonal basis, giving a Fourier transform, Plancherel's theorem
+and Poisson summation.
+
+Observe the division of labour: the $\FF_q$-bilinear form appears \emph{inside the character},
+indexing the basis, rather than defining the geometry of the space. The MacWilliams identity,
+relating the weight enumerator of a code $C$ to that of $C\perpp$, is Poisson summation in
+exactly this setting --- the bilinear form supplies the duality $C \leftrightarrow C\perpp$,
+and the $\CC$-valued inner product supplies the analysis.
+
+\section{Summary of Part I}
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+ & $\CC$ & $\RR$ & $\FF_q$ ($q$ odd) \\
+\midrule
+Nondegenerate symmetric forms & $1$ class & $n+1$ classes & $2$ classes \\
+Nondegenerate alternating forms & $1$ class & $1$ class & $1$ class \\
+Nondegenerate Hermitian forms & $n+1$ classes & --- & $1$ class \\
+$V \cong \dual{V}$ & yes & yes & yes \\
+$V = W \perp W\perpp$ & yes & yes & \textbf{no} \\
+Anisotropic spaces & $\dim \leq 1$ & all $n$ & $\dim \leq 2$ \\
+Self-dual subspaces $W = W\perpp$ & possible & no (definite) & \textbf{yes} \\
+Norm, metric, analysis on $V$ & yes & yes & no \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+\part{Categories, lattices, and two kinds of opposite}
+
+\noindent
+Part~I answered a question about forms. Part~II asks a question of the same shape one level
+up, and the answer will turn out to be the same theorem.
+
+\medskip
+\noindent\textbf{The question.} The opposite of the category of sets is the category of
+complete atomic Boolean algebras. What is the opposite of the category of vector spaces over
+$\FF_q$?
+
+\section{Categories, from scratch}\label{sec:cats}
+
+\begin{definition}[Category]
+A \emph{category} $\mathcal{C}$ consists of:
+\begin{itemize}[nosep]
+  \item a collection $\Ob(\mathcal{C})$ of \emph{objects};
+  \item for each pair $X, Y$ of objects a set $\mathcal{C}(X,Y)$ of \emph{morphisms}
+        (written $f : X \to Y$);
+  \item for each $X$ an \emph{identity} $\mathrm{id}_X \in \mathcal{C}(X,X)$;
+  \item a \emph{composition} $\mathcal{C}(Y,Z) \times \mathcal{C}(X,Y) \to \mathcal{C}(X,Z)$,
+        $(g,f) \mapsto g \circ f$;
+\end{itemize}
+such that composition is associative and the identities are neutral:
+$h(gf) = (hg)f$, $f \circ \mathrm{id}_X = f = \mathrm{id}_Y \circ f$.
+\end{definition}
+
+\begin{example}\label{ex:cats}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\Set$: objects are sets, morphisms are functions. $\FinSet$: the finite ones.
+  \item $\Vect_k$: objects are $k$-vector spaces, morphisms are linear maps.
+        $\FinVect_k$: the finite-dimensional ones.
+  \item Any partially ordered set $(P,\leq)$ is a category: objects are the elements, and
+        there is exactly one morphism $x \to y$ when $x \leq y$, none otherwise.
+        Transitivity gives composition, reflexivity the identities.
+  \item Any monoid is a category with one object, its elements being the morphisms.
+\end{enumerate}
+\end{example}
+
+\begin{definition}[Isomorphism]
+$f : X \to Y$ is an \emph{isomorphism} if there is $g : Y \to X$ with $gf = \mathrm{id}_X$
+and $fg = \mathrm{id}_Y$. In $\Set$ these are the bijections; in $\Vect_k$, the invertible
+linear maps.
+\end{definition}
+
+\begin{definition}[Opposite category]\label{def:op}
+The \emph{opposite} $\mathcal{C}^{\op}$ has the same objects as $\mathcal{C}$ and
+$\mathcal{C}^{\op}(X,Y) = \mathcal{C}(Y,X)$, with composition reversed. Formally: turn every
+arrow around. Note $(\mathcal{C}^{\op})^{\op} = \mathcal{C}$.
+\end{definition}
+
+Taking the opposite is trivial \emph{as an operation}; the content of a statement like
+``$\Set^{\op} \simeq \CABA$'' is that the formally-reversed category, which has no obvious
+description, is equivalent to a category one already knows independently.
+
+\begin{definition}[Functor]
+A \emph{functor} $F : \mathcal{C} \to \mathcal{D}$ assigns an object $FX$ to each object $X$
+and a morphism $Ff : FX \to FY$ to each $f : X \to Y$, preserving identities and composition:
+$F(\mathrm{id}_X) = \mathrm{id}_{FX}$, $F(g \circ f) = Fg \circ Ff$. A functor
+$\mathcal{C}^{\op} \to \mathcal{D}$ is called \emph{contravariant} (as a rule on
+$\mathcal{C}$ it reverses arrows: $Ff : FY \to FX$, $F(gf) = Ff \circ Fg$).
+\end{definition}
+
+\begin{example}[The dual space functor]
+$(-)^{*} : \Vect_k^{\op} \to \Vect_k$ sends $V \mapsto \dual{V}$ and $f : V \to W$ to the
+\emph{transpose} $\dual{f} : \dual{W} \to \dual{V}$, $\varphi \mapsto \varphi \circ f$. It
+reverses arrows because precomposition does.
+\end{example}
+
+\begin{example}[The powerset functor]\label{ex:powerset}
+$P : \Set^{\op} \to \Set$ sends $X \mapsto 2^{X}$ (the set of subsets) and
+$f : X \to Y$ to the \emph{preimage} map $f^{-1} : 2^{Y} \to 2^{X}$. Again arrow-reversing,
+because preimage is a pullback operation. Note that the \emph{image} map $f_{*} : 2^X \to 2^Y$
+is also functorial but \emph{covariant}, and is not the right functor here: $f^{-1}$ preserves
+all unions, intersections and complements, while $f_*$ does not.
+\end{example}
+
+\begin{definition}[Natural transformation]
+Given functors $F, G : \mathcal{C} \to \mathcal{D}$, a \emph{natural transformation}
+$\alpha : F \Rightarrow G$ is a family of morphisms $\alpha_X : FX \to GX$, one per object,
+such that for every $f : X \to Y$ the square
+\[
+\begin{tikzcd}
+FX \arrow[r,"\alpha_X"] \arrow[d,"Ff"'] & GX \arrow[d,"Gf"] \\
+FY \arrow[r,"\alpha_Y"'] & GY
+\end{tikzcd}
+\]
+commutes. It is a \emph{natural isomorphism} if every $\alpha_X$ is an isomorphism.
+\end{definition}
+
+This makes precise the remark in \S1: for the double dual there is a natural transformation
+$\Id \Rightarrow (-)^{**}$, given by $v \mapsto \mathrm{ev}_v$ where
+$\mathrm{ev}_v(\varphi) = \varphi(v)$, and it is an isomorphism on finite-dimensional spaces.
+For the single dual no such transformation can even be written down: $\Id$ and $(-)^{*}$ have
+different variance, so the square above does not typecheck.
+
+\begin{definition}[Equivalence, anti-equivalence]
+Functors $F : \mathcal{C} \to \mathcal{D}$ and $G : \mathcal{D} \to \mathcal{C}$ form an
+\emph{equivalence} $\mathcal{C} \simeq \mathcal{D}$ if $GF \cong \Id_{\mathcal{C}}$ and
+$FG \cong \Id_{\mathcal{D}}$ naturally. An \emph{anti-equivalence} or \emph{duality} between
+$\mathcal{C}$ and $\mathcal{D}$ is an equivalence $\mathcal{C}^{\op} \simeq \mathcal{D}$.
+\end{definition}
+
+Equivalence, not isomorphism, is the correct notion of sameness for categories: it allows
+objects to be matched up only up to isomorphism, which is all one ever wants.
+
+\begin{proposition}[Finite-dimensional self-duality]\label{prop:selfdual}
+$\FinVect_k^{\op} \simeq \FinVect_k$, via $V \mapsto \dual{V}$, with the natural isomorphism
+$V \cong V^{**}$ witnessing the round trip.
+\end{proposition}
+
+This is the cheap answer to our question: over any field, finite-dimensional linear algebra is
+its own opposite. Nothing new appears. That is suspicious, because in $\Set$ something new
+\emph{does} appear, and we should like to know why.
+
+\section{Order, lattices and Boolean algebras, from scratch}\label{sec:lattices}
+
+\begin{definition}[Poset]
+A \emph{partially ordered set} (poset) is a set $P$ with a relation $\leq$ that is reflexive
+($x \leq x$), antisymmetric ($x \leq y$ and $y \leq x$ imply $x = y$) and transitive.
+\end{definition}
+
+\begin{definition}[Meet and join]
+In a poset, the \emph{join} $x \vee y$ is the least upper bound of $x$ and $y$ (if it exists)
+and the \emph{meet} $x \wedge y$ is the greatest lower bound. A \emph{lattice} is a poset in
+which all binary meets and joins exist. It is \emph{bounded} if it has a least element $0$ and
+greatest element $1$, and \emph{complete} if \emph{all} subsets (not just finite ones) have
+meets and joins.
+\end{definition}
+
+\begin{example}\label{ex:lattices}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $2^{X}$, the subsets of a set $X$ ordered by inclusion: $\vee = \cup$, $\wedge = \cap$,
+        $0 = \emptyset$, $1 = X$. Complete.
+  \item $L(V)$, the subspaces of a vector space ordered by inclusion:
+        $W \wedge U = W \cap U$, $W \vee U = W + U$ (\emph{not} $W \cup U$, which is not a
+        subspace), $0 = \{0\}$, $1 = V$. Complete.
+\end{enumerate}
+\end{example}
+
+\begin{definition}[Distributive, modular]\label{def:distmod}
+A lattice is \emph{distributive} if
+\[
+  x \wedge (y \vee z) = (x \wedge y) \vee (x \wedge z) \qquad \text{for all } x,y,z,
+\]
+and \emph{modular} if the weaker
+\[
+  x \leq z \;\Longrightarrow\; x \vee (y \wedge z) = (x \vee y) \wedge z
+\]
+holds. Distributive implies modular.
+\end{definition}
+
+\begin{proposition}\label{prop:modular}
+$L(V)$ is modular (Dedekind's modular law, valid for submodules of any module), and for
+$\dim V \geq 2$ it is \emph{not} distributive.
+\end{proposition}
+
+\begin{proof}[Proof of non-distributivity]
+Take three pairwise-distinct lines $A, B, C$ in a plane. Then $B \vee C$ is the whole plane,
+so $A \wedge (B \vee C) = A$; but $A \wedge B = A \wedge C = 0$, so
+$(A \wedge B) \vee (A \wedge C) = 0 \neq A$. Three distinct lines exist in $\FF_q^{2}$ for
+every $q \geq 2$, since a plane has $q+1 \geq 3$ lines.
+\end{proof}
+
+This single computation is the seed of everything that follows: it is the exact point at which
+linear algebra departs from set theory, and it is visibly a statement about the presence of
+\emph{more than two} one-dimensional subspaces --- that is, about $q$.
+
+\begin{definition}[Complement, Boolean algebra]
+In a bounded lattice, a \emph{complement} of $x$ is an element $y$ with $x \wedge y = 0$ and
+$x \vee y = 1$. A lattice is \emph{complemented} if every element has at least one complement.
+A \emph{Boolean algebra} is a bounded distributive complemented lattice. In a Boolean algebra
+complements are unique, and one writes $\neg x$ or $x^{c}$.
+\end{definition}
+
+\begin{warning}\label{warn:complemented}
+$L(V)$ \emph{is} complemented --- every subspace has a direct complement --- but the
+complement is far from unique, and $W \mapsto W\perpp$ is not in general one of them (that is
+exactly the isotropy problem of \S\ref{sec:breaks}). Boolean-ness fails through
+\emph{distributivity}, not through the existence of complements.
+\end{warning}
+
+\begin{definition}[Atom, atomic, CABA]
+In a bounded lattice an \emph{atom} is a minimal nonzero element. A complete lattice is
+\emph{atomic} if every element is the join of the atoms below it. $\CABA$ is the category of
+\emph{complete atomic Boolean algebras}, with morphisms the maps preserving arbitrary joins,
+arbitrary meets and complements.
+\end{definition}
+
+\begin{definition}[Boolean homomorphism, $\Bool$, $\FinBool$]
+A \emph{Boolean homomorphism} preserves $\vee, \wedge, \neg, 0, 1$. $\Bool$ is the category of
+Boolean algebras and homomorphisms; $\FinBool$ the finite ones.
+\end{definition}
+
+\begin{definition}[Filter, ultrafilter]
+A \emph{filter} on a Boolean algebra $B$ is a nonempty upward-closed subset $F$ closed under
+$\wedge$ with $0 \notin F$; it is an \emph{ultrafilter} if for every $x$ exactly one of
+$x, \neg x$ lies in $F$. Ultrafilters correspond exactly to homomorphisms $B \to 2$.
+\end{definition}
+
+\section{The duality $\Set^{\op} \simeq \CABA$}
+
+\begin{theorem}[Powerset duality]\label{thm:setcaba}
+The functor $P : \Set^{\op} \to \CABA$, $X \mapsto 2^{X}$, $f \mapsto f^{-1}$, is an
+equivalence of categories. Its inverse sends a complete atomic Boolean algebra to its set of
+atoms. Restricting to finite objects, $\FinSet^{\op} \simeq \FinBool$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+$2^{X}$ is a complete atomic Boolean algebra whose atoms are the singletons, so
+$\mathrm{At}(2^{X}) \cong X$ naturally. Conversely, in a complete atomic Boolean algebra $B$
+every element is the join of the atoms beneath it, and this decomposition is unique, giving
+$B \cong 2^{\mathrm{At}(B)}$ naturally. Morphisms match because a complete Boolean
+homomorphism $2^{Y} \to 2^{X}$ is determined by where atoms go, i.e.\ by a function
+$X \to Y$.
+\end{proof}
+
+\begin{remark}[Two neighbouring theorems]
+$\Bool^{\op} \simeq \Stone$, the category of \emph{Stone spaces} (compact, Hausdorff, totally
+disconnected topological spaces), by sending $B$ to its space of ultrafilters. This is Stone
+duality proper; Theorem~\ref{thm:setcaba} is the ``complete/atomic'' variant in which the
+topology becomes invisible. In the finite case all three coincide:
+$\FinSet^{\op} \simeq \FinBool$, and finite Stone spaces are just finite sets.
+\end{remark}
+
+\section{Why the two dualities differ: dualizing objects}
+
+Both $\FinVect^{\op} \simeq \FinVect$ and $\FinSet^{\op} \simeq \FinBool$ are instances of one
+pattern.
+
+\begin{definition}[Dualizing (schizophrenic) object]
+Suppose an object $D$ lives in two categories $\mathcal{C}$ and $\mathcal{D}$ ``compatibly''.
+Then $\Hom_{\mathcal{C}}(-, D)$ and $\Hom_{\mathcal{D}}(-, D)$ are contravariant functors that
+often form an adjunction, and restrict to a duality on the objects for which the canonical map
+$X \to \Hom(\Hom(X,D),D)$ is an isomorphism.
+\end{definition}
+
+\begin{itemize}
+  \item In $\Vect_k$, the dualizing object is $k$: $\dual{V} = \Hom_k(V,k)$. Here $k$ is the
+        \emph{unit} of the tensor product and carries no internal structure beyond being the
+        ground field, so $\Hom_k(V,k)$ is a bare vector space. The duality stays inside
+        $\Vect_k$.
+  \item In $\Set$, the dualizing object is $2 = \{\bot,\top\}$: $2^{X} = \Hom_{\Set}(X, 2)$.
+        Here $2$ is \emph{not} the unit of the cartesian product (that is the one-point set
+        $1$); it is the \emph{subobject classifier}, and it carries an internal Boolean
+        algebra structure. So $2^{X}$ inherits that structure pointwise and the duality lands
+        \emph{outside} $\Set$, in $\CABA$.
+\end{itemize}
+
+\begin{definition}[Subobject]
+A morphism $m : U \to X$ is a \emph{monomorphism} (mono) if $mf = mg \Rightarrow f = g$. A
+\emph{subobject} of $X$ is an isomorphism class of monos into $X$; $\Sub(X)$ denotes the poset
+of subobjects. In $\Set$, $\Sub(X) = 2^{X}$; in $\Vect_k$, $\Sub(V) = L(V)$.
+\end{definition}
+
+\begin{definition}[Subobject classifier, topos]
+A \emph{subobject classifier} in a category with finite limits is an object $\Omega$ with a
+mono $\mathsf{true} : 1 \to \Omega$ such that for every mono $U \rightarrowtail X$ there is a
+unique $\chi_U : X \to \Omega$ making
+\[
+\begin{tikzcd}
+U \arrow[r] \arrow[d, rightarrowtail] & 1 \arrow[d,"\mathsf{true}"] \\
+X \arrow[r,"\chi_U"'] & \Omega
+\end{tikzcd}
+\]
+a pullback. An \emph{(elementary) topos} is a category with finite limits, exponentials
+$Y^{X}$, and a subobject classifier. $\Set$ is a topos with $\Omega = 2$ and $\chi_U$ the
+indicator function.
+\end{definition}
+
+So in $\Set$ the phrase ``the dualizing object'' and the phrase ``the object that represents
+subobjects'' name the \emph{same} object $2$. That coincidence is what makes
+$\Set^{\op} \simeq \CABA$ simultaneously a hom-duality and a statement about subobject
+lattices. In $\Vect_k$ the coincidence fails --- and it must.
+
+\begin{definition}[Additive and abelian categories]
+A category is \emph{additive} if each $\mathcal{C}(X,Y)$ is an abelian group with bilinear
+composition, there is a zero object $0$ (both initial and terminal), and finite biproducts
+exist. It is \emph{abelian} if additionally every morphism has a kernel and a cokernel, every
+mono is a kernel, and every epi is a cokernel. $\Vect_k$ is abelian.
+\end{definition}
+
+\begin{definition}[Strict initial object]
+An initial object $0$ is \emph{strict} if every morphism $X \to 0$ is an isomorphism. In
+$\Set$ the initial object is $\emptyset$, and indeed any function $X \to \emptyset$ forces
+$X = \emptyset$. In every topos the initial object is strict.
+\end{definition}
+
+\begin{theorem}\label{thm:notopos}
+No nontrivial category is both abelian and a topos.
+\end{theorem}
+
+\begin{proof}
+In an abelian category the initial and terminal objects coincide: $0 \cong 1$. In a topos the
+initial object is strict. So for any object $X$, the unique map $X \to 1 \cong 0$ is a
+morphism into a strict initial object, hence an isomorphism, hence $X \cong 0$ for every $X$
+and the category is equivalent to the one-object one-morphism category.
+\end{proof}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{The structural point.} $\Set$ and $\Vect_q$ sit on
+opposite sides of a genuine dichotomy. Subobject lattices in a topos are Heyting algebras
+(Boolean, in $\Set$); subobject lattices in an abelian category are modular. By
+Theorem~\ref{thm:notopos} no category is both. Hence the $\Set$-style duality and the
+$\Vect$-style duality are not two instances of one theorem that one can interpolate naively:
+they are two different notions of ``the dual'', which happen to coincide only for $\Set$.}}
+\end{center}
+
+\section{Deforming the recipe: subspace lattices and projective geometry}
+
+The \emph{content} of $\Set^{\op} \simeq \CABA$ is: \emph{a set is recovered from its lattice
+of subobjects, and that lattice is Boolean.} Let us run that recipe over $\FF_q$.
+
+\begin{definition}[Projective space]
+For a vector space $V$ over $k$, the \emph{projective space} $\mathbb{P}(V)$ has as points the
+$1$-dimensional subspaces of $V$, as lines the $2$-dimensional subspaces, and so on. When
+$\dim V = n$ and $k = \FF_q$ one writes $\PG(n-1, q)$; its \emph{projective dimension} is
+$n-1$.
+\end{definition}
+
+\begin{definition}[Gaussian binomial coefficient]
+For $0 \le k \le n$,
+\[
+  \qbin{n}{k} \;=\; \prod_{i=0}^{k-1} \frac{q^{\,n-i} - 1}{q^{\,k-i} - 1}.
+\]
+\end{definition}
+
+\begin{proposition}
+The number of $k$-dimensional subspaces of $\FF_q^{n}$ is $\qbin{n}{k}$, and
+$\lim_{q \to 1} \qbin{n}{k} = \binom{n}{k}$.
+\end{proposition}
+
+\begin{example}
+$\qbin{2}{1} = \frac{q^{2}-1}{q-1} = q+1$: a plane over $\FF_q$ has $q+1$ lines, which is why
+Proposition~\ref{prop:modular} needed $q \geq 2$. At $q=1$ this is $2 = \binom{2}{1}$.
+\end{example}
+
+\begin{theorem}[Fundamental Theorem of Projective Geometry]\label{thm:ftpg}
+Let $V, W$ be vector spaces of dimension $\geq 3$ over fields $k, l$. Every isomorphism of
+lattices $L(V) \to L(W)$ is induced by a $\sigma$-semilinear isomorphism $V \to W$ for some
+field isomorphism $\sigma : k \to l$, and the semilinear map is unique up to a scalar. In
+particular
+\[
+  \Aut\bigl(L(V)\bigr) \;=\; \PGammaL(V) \;=\; \PGL(V) \rtimes \Aut(k).
+\]
+\end{theorem}
+
+This is the exact analogue of Theorem~\ref{thm:setcaba}: \emph{the object is recovered from
+its subobject lattice}. The difference is what kind of lattice one gets.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Category & $\Sub(X)$ & Recovery theorem \\
+\midrule
+$\Set$ & Boolean lattice $2^{X}$ & $\Set^{\op} \simeq \CABA$ \\
+$\Vect_{\FF_q}$ & projective geometry $L(V) = \PG(n{-}1,q)$ & Fundamental Theorem (\ref{thm:ftpg}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{definition}[Quantum logic]
+Birkhoff and von Neumann (1936) proposed reading the subspace lattice of a Hilbert space as a
+propositional logic: $\wedge$ = ``and'', $\vee$ = ``or'', $W\perpp$ = ``not''. Because the
+lattice is non-distributive, this \emph{quantum logic} differs from classical propositional
+logic exactly in the distributive law. The failure computed in
+Proposition~\ref{prop:modular} is the same failure.
+\end{definition}
+
+\noindent
+So: \textbf{the $q$-analogue of $\Bool$ is the category of projective geometries ---
+equivalently, finite quantum logic.}
+
+\section{Dualities and polarities: where Part I reappears}
+
+We now identify the anti-automorphisms. In $\Set$ the anti-automorphism of $2^{X}$ is
+complementation $S \mapsto S^{c}$. What plays that role for $L(V)$?
+
+\begin{definition}[Correlation, duality, polarity]
+An \emph{anti-isomorphism} (or \emph{duality}, or \emph{correlation}) of lattices is an
+order-reversing bijection $\delta : L(V) \to L(W)$; equivalently an isomorphism
+$L(V)^{\op} \to L(W)$. A \emph{polarity} is a duality $\delta : L(V) \to L(V)$ with
+$\delta^{2} = \mathrm{id}$.
+\end{definition}
+
+\begin{definition}[Reflexive form]
+A sesquilinear form (Definition~\ref{def:sesq}) is \emph{reflexive} if
+$\ip{v}{w} = 0 \iff \ip{w}{v} = 0$. Reflexivity is exactly what is needed for
+$W \mapsto W\perpp$ to be unambiguous (left and right perp agree).
+\end{definition}
+
+\begin{theorem}[Second Fundamental Theorem; Birkhoff--von Neumann, Baer]\label{thm:bvn}
+Let $\dim V \geq 3$. Every duality $L(V) \to L(V)$ is of the form $W \mapsto W\perpp$ for a
+nondegenerate sesquilinear form, unique up to a scalar. The dualities that are
+\emph{polarities} correspond precisely to the \emph{reflexive} forms, and every nondegenerate
+reflexive sesquilinear form is, after rescaling by a nonzero scalar, of exactly one of the
+following kinds:
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item symmetric bilinear \quad ($\sigma = \mathrm{id}$, $\ip{w}{v} = \ip{v}{w}$);
+  \item alternating bilinear \quad ($\sigma = \mathrm{id}$, $\ip{v}{v} = 0$);
+  \item $\sigma$-Hermitian \quad ($\sigma$ an involution $\neq \mathrm{id}$).
+\end{enumerate}
+(In characteristic $2$ cases (i) and (ii) are not disjoint; see the remark in \S\ref{sec:forms}.)
+\end{theorem}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Part I and Part II are the same theorem.} The three
+families of forms classified in \S\ref{sec:forms} --- symmetric, alternating, Hermitian ---
+are \emph{not} a convenient list. By Theorem~\ref{thm:bvn} they are exactly the
+implementations of ``op'' for linear algebra: the involutive anti-automorphisms of the
+subobject lattice. Asking ``what replaces the inner product over $\FF_q$?'' and asking ``what
+is the opposite of $\Vect_{\FF_q}$?'' are the same question, and the classification in
+Part~I is the answer to both.}}
+\end{center}
+
+\section{Complementation lost}\label{sec:complost}
+
+Here the compressed sentence of \S\ref{sec:breaks} returns one level up.
+
+\begin{definition}[Ortholattice, orthomodular lattice]\label{def:ortho}
+An \emph{orthocomplementation} on a bounded lattice is a map $x \mapsto x'$ with
+$x'' = x$, \; $x \leq y \Rightarrow y' \leq x'$, \; $x \wedge x' = 0$ and $x \vee x' = 1$. A
+lattice with one is an \emph{ortholattice}; it is \emph{orthomodular} if
+$x \leq y \Rightarrow y = x \vee (y \wedge x')$. Subspace lattices of Hilbert spaces are
+orthomodular; Boolean algebras are exactly the distributive ortholattices.
+\end{definition}
+
+Now compare the three regimes for the map $W \mapsto W\perpp$:
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+ & $\CC$, positive definite & $\FF_q$, nondegenerate & $\FF_1$ \\
+\midrule
+order-reversing involution & yes & yes & yes \\
+$\dim W + \dim W\perpp = \dim V$ & yes & yes & yes \\
+$W \wedge W\perpp = 0$ & yes & \textbf{no} & yes \\
+so: an orthocomplementation? & yes & \textbf{no} & yes \\
+lattice distributive? & no & no & \textbf{yes} \\
+resulting logic & orthomodular (quantum) & polarity only & Boolean (classical) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Over $\FF_q$ one has \emph{strictly less} than quantum logic: $W \mapsto W\perpp$ is an
+order-reversing involution but not an orthocomplementation, because $W \cap W\perpp \neq 0$
+whenever $W$ contains an isotropic vector. Boolean complementation is a polarity \emph{plus}
+the complement property. Over $\FF_q$ one gets the polarity and loses the complementation ---
+which is precisely ``one keeps the duality and loses the splitting'', restated for lattices.
+
+\section{Why it is called quantum logic}\label{sec:qlogic}
+
+The name is Birkhoff and von Neumann's, from \emph{The Logic of Quantum Mechanics}
+(\emph{Annals of Mathematics} \textbf{37}, 1936). ``Logic'' means the algebra of
+\emph{propositions} about a physical system; ``quantum'' means the propositions that quantum
+mechanics permits one to assert. The claim being made is that physics determines which
+propositional calculus is correct.
+
+\subsection{Classical propositions form a Boolean algebra}
+
+\begin{definition}[Phase space, classical proposition]
+A classical mechanical system has a \emph{phase space} $X$, the set of its possible states
+(positions and momenta). A \emph{proposition} about the system is a yes/no question --- ``the
+particle lies in region $R$'', ``the energy is below $E$'' --- and is identified with the
+subset of $X$ on which it holds.
+\end{definition}
+
+Under that identification, ``$P$ and $Q$'' is $P \cap Q$, ``$P$ or $Q$'' is $P \cup Q$, and
+``not $P$'' is $P^{c}$. So the propositions of a classical system form a Boolean algebra.
+Note that classical logic is not \emph{assumed} here: it is \emph{derived} from the facts
+that states are points and propositions are subsets.
+
+\subsection{Quantum propositions are subspaces}
+
+\begin{definition}[Hilbert space]
+A \emph{Hilbert space} is a complex vector space $H$ with a positive-definite Hermitian inner
+product that is complete in the induced norm. A subspace is \emph{closed} if it contains all
+its limits; in finite dimensions every subspace is closed.
+\end{definition}
+
+\begin{definition}[Projection, self-adjoint operator]
+The \emph{adjoint} $A^{*}$ of a bounded operator is defined by
+$\ip{Av}{w} = \ip{v}{A^{*}w}$; $A$ is \emph{self-adjoint} if $A = A^{*}$. A
+\emph{(orthogonal) projection} is a self-adjoint $P$ with $P^{2} = P$; projections correspond
+bijectively to closed subspaces, $P \leftrightarrow \mathrm{im}\,P$.
+\end{definition}
+
+\begin{theorem}[Spectral theorem, projection-valued form]
+Every self-adjoint operator $A$ determines a \emph{projection-valued measure} $E_A$: to each
+Borel set $\Delta \subseteq \RR$ it assigns a projection $E_A(\Delta)$, additively on disjoint
+unions, with $E_A(\RR) = \mathrm{id}$.
+\end{theorem}
+
+The projection $E_A(\Delta)$ \emph{is} the proposition ``the value of the observable $A$ lies
+in $\Delta$''. Hence:
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{Quantum propositions are the closed subspaces of $H$, and
+\[
+  \text{``and''} = W \cap U, \qquad
+  \text{``or''} = \overline{W + U}, \qquad
+  \text{``not''} = W\perpp .
+\]}}
+\end{center}
+A state $\psi$ makes the proposition $W$ \emph{definitely true} if $\psi \in W$,
+\emph{definitely false} if $\psi \in W\perpp$, and otherwise assigns it only the probability
+$\lVert P_W \psi\rVert^{2}$ (the \emph{Born rule}).
+
+The decisive entry is the middle one. ``Or'' is \emph{not} union, because a union of subspaces
+is not a subspace; one must take the closed span, and the span contains vectors lying in
+neither disjunct. Those are the superpositions.
+
+\subsection{The failure of distributivity, read physically}
+
+Take a qubit, $H = \CC^{2}$, with the usual notation $\lvert 0\rangle, \lvert 1\rangle$ for
+the $z$-spin eigenstates and $\lvert +\rangle = (\lvert 0\rangle + \lvert 1\rangle)/\sqrt{2}$
+for an $x$-spin eigenstate. Put
+\[
+  a = \text{``spin is } {+}x\text{''} = \langle \lvert +\rangle\rangle, \quad
+  b = \text{``spin is } {+}z\text{''} = \langle \lvert 0\rangle\rangle, \quad
+  c = \text{``spin is } {-}z\text{''} = \langle \lvert 1\rangle\rangle .
+\]
+Then $b \vee c = H$, the tautology ``the $z$-spin is up or down'', so
+\[
+  a \wedge (b \vee c) = a \wedge 1 = a,
+  \qquad\text{but}\qquad
+  (a \wedge b) \vee (a \wedge c) = 0 \vee 0 = 0 .
+\]
+In words: ``the spin is $+x$, \emph{and} the $z$-spin is either up or down'' is true, since
+the second conjunct is a tautology; whereas ``either (the spin is $+x$ and $z$-up) or (the
+spin is $+x$ and $z$-down)'' is a disjunction of two contradictions, there being no
+simultaneous eigenstate of $x$- and $z$-spin. Distributing across the disjunction converts a
+truth into a falsehood.
+
+The physical content is: \emph{a disjunction can be true without either disjunct being true}.
+$\lvert +\rangle$ lies in the span of $\{\lvert 0\rangle, \lvert 1\rangle\}$ but in neither.
+Superposition, stated as a fact about a lattice.
+
+\begin{remark}[This is Proposition~\ref{prop:modular}]\label{rem:samecomputation}
+The computation just performed is the one proving $L(V)$ non-distributive: three
+pairwise-distinct lines $A, B, C$ in a plane satisfy $A \wedge (B \vee C) = A$ while
+$(A \wedge B) \vee (A \wedge C) = 0$. Here the plane is $\CC^{2}$ and the three lines are
+$\lvert 0\rangle$, $\lvert 1\rangle$, $\lvert +\rangle$.
+
+Over $\FF_2$ a plane has exactly three lines, spanned by $(1,0)$, $(0,1)$ and $(1,1)$ ---
+that is, by $\lvert 0\rangle$, $\lvert 1\rangle$ and $\lvert 0\rangle + \lvert 1\rangle$. So
+the smallest non-distributive quantum logic is the $\FF_2$ qubit, and the hypothesis
+``$q \geq 2$'' in the proof of Proposition~\ref{prop:modular} is exactly the hypothesis that
+superposition exists at all.
+\end{remark}
+
+\subsection{Is it really \emph{logic}? The case against}
+
+As a logic it is impoverished, and this should be said plainly.
+\begin{itemize}[nosep]
+  \item There is no satisfactory conditional. The deduction theorem fails, and the candidate
+        implications (the Sasaki hook $a \to b := a' \vee (a \wedge b)$ and its rivals) each
+        fail some property one wants.
+  \item Orthomodular lattices have no well-behaved tensor product, so composing two systems
+        --- the very place quantum mechanics is most distinctive --- is awkward.
+  \item A deflationary reading is available: nothing about \emph{inference} has changed; what
+        changed is which propositions are simultaneously meaningful. On that reading the
+        subject is projective geometry with a suggestive vocabulary.
+\end{itemize}
+Putnam's \emph{Is Logic Empirical?} (1968) argued for the strong reading, that quantum
+mechanics revises logic as relativity revised geometry. He later retracted it.
+
+\subsection{The case for: the lattice determines the physics}
+
+The name is nonetheless earned, because the propositional lattice turns out to contain the
+entire theory --- a startling amount of content for a partially ordered set.
+
+\begin{theorem}[Gleason, 1957]
+Let $\dim H \geq 3$. Every countably additive probability measure on the lattice of
+projections of $H$ has the form $P \mapsto \mathrm{tr}(\rho P)$ for a unique density operator
+$\rho$.
+\end{theorem}
+
+So the Born rule need not be postulated: it is forced by the lattice together with countable
+additivity. (The hypothesis $\dim H \geq 3$ is essential --- the qubit used above admits exotic
+measures --- and it is the same dimension bound as in the Fundamental
+Theorem~\ref{thm:ftpg}.)
+
+\begin{definition}[Division ring, quaternions]
+A \emph{division ring} satisfies all the field axioms except commutativity of multiplication.
+The \emph{quaternions} $\HH$ form the four-dimensional real division ring with basis
+$1, i, j, k$ and $i^{2} = j^{2} = k^{2} = ijk = -1$, with conjugation
+$\overline{a + bi + cj + dk} = a - bi - cj - dk$ as involution.
+\end{definition}
+
+\begin{theorem}[Piron 1964; Sol\`er 1995]\label{thm:pironsoler}
+A complete, atomistic, irreducible orthomodular lattice with the covering property and
+dimension $\geq 4$ is isomorphic to the lattice of closed subspaces of a Hermitian space over
+some division ring with involution. If it moreover admits an infinite orthonormal sequence,
+that division ring is $\RR$, $\CC$ or $\HH$ with its standard involution, and the space is a
+Hilbert space.
+\end{theorem}
+
+Piron's step is, in essence, the Fundamental Theorem of Projective Geometry
+(Theorem~\ref{thm:ftpg}) together with the classification of polarities
+(Theorem~\ref{thm:bvn}). Which means the three families of Part~I reappear a third time ---
+now as the complete list of candidate quantum mechanics:
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lll}
+\toprule
+polarity type (Thm.~\ref{thm:bvn}) & division ring, involution & physics \\
+\midrule
+symmetric bilinear & $\RR$, trivial involution & real quantum mechanics \\
+Hermitian & $\CC$, complex conjugation & standard quantum mechanics \\
+Hermitian & $\HH$, quaternionic conjugation & quaternionic quantum mechanics \\
+\textbf{alternating} & --- & \textbf{excluded} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}[Why symplectic quantum mechanics is impossible]
+An alternating form satisfies $\ip{v}{v} = 0$ for every $v$, so every subspace meets its own
+perp: $W \wedge W\perpp \neq 0$ for all $W \neq 0$. Hence $W \mapsto W\perpp$ is never an
+orthocomplementation (Definition~\ref{def:ortho}), and the lattice is never an ortholattice.
+\end{proposition}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Positive-definiteness is what selects two of the three
+families and discards the symplectic one.} The classification of \S\ref{sec:forms} is
+simultaneously: (i) the answer to ``what replaces the inner product over $\FF_q$'', (ii) by
+Theorem~\ref{thm:bvn}, the list of implementations of ``op'' for linear algebra, and (iii) by
+Theorem~\ref{thm:pironsoler}, the list of possible quantum mechanics. One classification,
+three readings.}}
+\end{center}
+
+\subsection{Over $\FF_q$: the logic without the statistics}
+
+What does the finite-field case inherit? Exactly the lattice, and nothing measure-theoretic.
+The obstruction is Remark~\ref{rem:ordering}: no ordering, hence no probabilities.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+kept over $\FF_q$ & lost over $\FF_q$ \\
+\midrule
+superposition (Remark~\ref{rem:samecomputation}) & the Born rule: $\lVert P_W\psi\rVert^{2}$
+  needs $[0,1] \subset \RR$ \\
+non-distributivity & Gleason's theorem: no measures to classify \\
+entanglement, no-cloning, contextuality & orthomodularity itself (table in
+  \S\ref{sec:complost}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Amplitudes exist over $\FF_q$; magnitudes do not. This is a live research area ---
+\emph{modal quantum theory} (Schumacher and Westmoreland), quantum mechanics over finite
+fields, in which the only predicates are \emph{possible} and \emph{impossible} rather than
+probabilities. Remarkably, analogues of teleportation, superdense coding, no-cloning and a
+Bell-type contextuality theorem all survive there. It is a clean experiment separating the
+structural features of quantum mechanics from those requiring probability.
+
+\subsection{A wrinkle: von Neumann's own retreat}
+
+Von Neumann grew dissatisfied with the projection lattice of $B(H)$. For infinite-dimensional
+$H$ that lattice is orthomodular but \emph{not modular} (Definition~\ref{def:distmod}), and
+modularity is what supports a well-behaved dimension function. Wanting a dimension taking
+values continuously in $[0,1]$ --- a canonical \emph{a priori} probability --- he was led to
+type $\mathrm{II}_1$ factors and continuous geometry, and away from quantum logic toward what
+are now called von Neumann algebras.
+
+The wrinkle for us: over $\FF_q$ every space is finite-dimensional, so $L(V)$ \emph{is}
+modular (Proposition~\ref{prop:modular}). The finite-field case sits on von Neumann's
+preferred side of that split. It has the modularity he wanted, and lacks --- for the entirely
+separate reason that $\FF_q$ is unordered --- the measure he wanted it for.
+
+
+\newpage
+\part{The limit $q \to 1$}
+
+\section{The field with one element}
+
+\begin{warning}
+There is no field with one element: a field requires $1 \neq 0$. ``$\FF_1$'' names a
+programme, not an object --- the search for a base beneath $\Spec \ZZ$ over which
+$q$-analogue formulas make sense at $q = 1$. Implementations include Tits' original
+observation (1957), Deitmar's monoid schemes, Kapranov--Smirnov, Connes--Consani, Borger's
+$\Lambda$-rings and To\"en--Vaqui\'e. They agree on the combinatorics below and differ
+elsewhere.
+\end{warning}
+
+\begin{definition}[Pointed set; the standard model]
+A \emph{pointed set} is a pair $(X, \ast)$ with $\ast \in X$; a morphism of pointed sets
+preserves the basepoint. $\FinSet_{\ast}$ denotes the category of finite pointed sets. In the
+Deitmar / Kapranov--Smirnov model, an \emph{$\FF_1$-vector space} is a finite pointed set (the
+basepoint is $0$), and an \emph{$\FF_1$-linear map} is a pointed map. There is no addition ---
+$\FF_1$ has no additive structure to inherit --- and scalar multiplication is trivial because
+$\FF_1^{\times} = \{1\}$.
+\end{definition}
+
+\begin{proposition}[$\GL$ at $q = 1$]
+$\GL_n(\FF_1) = S_n$, the symmetric group: the $\FF_1$-linear automorphisms of a pointed set
+with $n$ non-basepoint elements are the permutations of those elements. Numerically,
+\[
+  |\GL_n(\FF_q)| \;=\; \prod_{i=0}^{n-1}\bigl(q^{n} - q^{i}\bigr)
+  \;=\; q^{\binom{n}{2}} (q-1)^{n} \,[n]_q!,
+  \qquad [n]_q! = \prod_{i=1}^{n} \frac{q^{i}-1}{q-1},
+\]
+so after dividing out the $n$ copies of the scalar group $\FF_q^{\times}$ --- which
+degenerates to the trivial group --- and setting $q = 1$ one gets $n!$.
+\end{proposition}
+
+\begin{remark}[Tits' observation]
+The building of $\GL_n(\FF_q)$ is the flag complex of the subspace lattice $L(\FF_q^{n})$; at
+$q=1$ it degenerates to the Coxeter complex of $S_n$, i.e.\ to a single apartment. ``The
+building becomes the apartment'' and ``the subspace lattice becomes the Boolean lattice'' are
+the same statement: a frame (unordered basis up to scalars) is exactly a set.
+\end{remark}
+
+\section{Isotropy vanishes, and Boolean logic reappears}
+
+\begin{proposition}[Counts of nonzero isotropic vectors]\label{prop:isocount}
+For a nondegenerate form on a space over $\FF_q$, the number of nonzero isotropic vectors is:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+form & count & value at $q=1$ \\
+\midrule
+symplectic $\Sp_{2m}(q)$ & $q^{2m}-1$ & $0$ \\
+orthogonal $O_{2m}^{+}(q)$ & $(q^{m}-1)(q^{m-1}+1)$ & $0$ \\
+orthogonal $O_{2m}^{-}(q)$ & $(q^{m}+1)(q^{m-1}-1)$ & $0$ \\
+orthogonal $O_{2m+1}(q)$ & $q^{2m}-1$ & $0$ \\
+unitary $U_{n}(q)$ & $\bigl(q^{n}-(-1)^{n}\bigr)\bigl(q^{n-1}-(-1)^{n-1}\bigr)$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Every one of them vanishes at $q = 1$.
+\end{proposition}
+
+\begin{proof}[Why this must happen]
+Isotropy requires \emph{addition}. To have $\ip{v}{v} = 0$ with $v \neq 0$ one needs a sum of
+nonzero terms to cancel, and $\FF_1$ has no addition at all. The vanishing of the counts is
+the arithmetic shadow of that structural absence.
+\end{proof}
+
+\begin{corollary}[The chain closes]
+At $q = 1$:
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item there are no isotropic vectors, so $W \wedge W\perpp = 0$ and the polarity
+        $W \mapsto W\perpp$ becomes a genuine complementation;
+  \item the subspace lattice $L_n(q)$ becomes the Boolean lattice $2^{[n]}$, hence
+        distributive;
+  \item distributive $+$ complemented $=$ Boolean.
+\end{enumerate}
+Therefore the $q$-analogue of $\Bool$ degenerates to $\Bool$, and
+$\Set^{\op} \simeq \CABA$ is recovered:
+\[
+  \Vect_{\FF_q} \;\xrightarrow{\ \text{subobject lattices}\ }\;
+  \text{projective geometry / quantum logic} \;\xrightarrow{\ q \to 1\ }\; \Bool .
+\]
+\end{corollary}
+
+\subsection*{The $q \to 1$ dictionary}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lll}
+\toprule
+& at $q$ & at $q = 1$ \\
+\midrule
+object & $\FF_q$-vector space $\FF_q^{n}$ & pointed set, $n$ non-base points \\
+number of $k$-subobjects & $\qbin{n}{k}$ & $\binom{n}{k}$ \\
+subobject lattice & $L_n(q)$: modular, not distributive & $2^{[n]}$: Boolean \\
+points of $\PG(n{-}1,q)$ & $1 + q + \cdots + q^{n-1}$ & $n$ \\
+automorphisms of the lattice & $\PGammaL_n(q)$ & $S_n$ \\
+nonzero isotropic vectors & see Prop.~\ref{prop:isocount} & $0$ \\
+$W \mapsto W\perpp$ & polarity, not a complementation & Boolean complementation \\
+building & Tits building of $\GL_n(\FF_q)$ & Coxeter complex of $S_n$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{An aside: the prime at infinity is not $\FF_1$}
+
+\begin{definition}[Absolute value, place]
+An \emph{absolute value} on a field $k$ is $|\cdot| : k \to \RR_{\geq 0}$ with $|x| = 0 \iff
+x = 0$, $|xy| = |x||y|$ and $|x+y| \leq |x| + |y|$. Two are \emph{equivalent} if one is a
+positive power of the other; an equivalence class is a \emph{place}. The \emph{$p$-adic}
+absolute value is $|p^{a} u/v|_p = p^{-a}$ for $u,v$ coprime to $p$.
+\end{definition}
+
+\begin{theorem}[Ostrowski]
+Every nontrivial place of $\QQ$ is either $|\cdot|_p$ for a prime $p$, or the usual
+archimedean $|\cdot|_{\infty}$. The completions are $\QQ_p$ and $\RR$, and the product formula
+$\prod_{v} |x|_v = 1$ holds for $x \in \QQ^{\times}$.
+\end{theorem}
+
+The place $\infty$ is thus a genuine place of $\QQ$, ``the prime at infinity'', with completion
+$\RR$ and residue characteristic $0$. It is an \emph{archimedean completion}. $\FF_1$, by
+contrast, is a proposed \emph{degeneration}: a base such that $\Spec \ZZ \to \Spec \FF_1$ is
+terminal, so that the fibre product $\Spec\ZZ \times_{\Spec \FF_1} \Spec\ZZ$ exists and a
+Weil-style proof of the Riemann Hypothesis might be imitated (Deninger, Manin). These are
+different directions: one completes, the other degenerates.
+
+They are nonetheless productively confused, because both are ``the extra point one bolts onto
+$\Spec \ZZ$'', and because Connes--Consani genuinely knit them together via the ad\`ele class
+space, where the archimedean place and the $\FF_1$-structure appear in one construction. The
+confusion is fertile; it is still a confusion.
+
+\section{Three answers, preserved}
+
+The phrase ``the opposite of $\Set$ is $\Bool$'' bundles two claims which coincide only because
+$\Set$ is a topos. Unbundled, the $q$-deformation goes three ways, and I do not think they
+reconcile.
+
+\begin{description}[leftmargin=1.8em,style=nextline]
+\item[(1) The literal answer: linear algebra is self-dual.]
+$\FinVect_q^{\op} \simeq \FinVect_q$ (Proposition~\ref{prop:selfdual}). For infinite
+dimensions one needs topology:
+
+\begin{definition}[Linearly compact vector space]
+A topological $k$-vector space ($k$ discrete) is \emph{linearly topologised} if $0$ has a
+neighbourhood basis of open subspaces, and \emph{linearly compact} if in addition it is
+Hausdorff, complete, and every family of closed cosets with the finite-intersection property
+has nonempty intersection. Equivalently: it is an inverse limit of finite-dimensional discrete
+spaces.
+\end{definition}
+
+\begin{theorem}[Lefschetz duality]
+$\Vect_k^{\op} \simeq \LinComp_k$, via $V \mapsto \dual{V}$ with the topology of pointwise
+convergence.
+\end{theorem}
+
+\begin{definition}[$\Ind$ and $\Pro$]
+$\Ind(\mathcal{C})$ is the category of formal filtered colimits of objects of $\mathcal{C}$;
+$\Pro(\mathcal{C}) = \Ind(\mathcal{C}^{\op})^{\op}$, formal cofiltered limits.
+\end{definition}
+
+Since $\Vect_k = \Ind(\FinVect_k)$ we get $\Vect_k^{\op} = \Pro(\FinVect_k^{\op}) =
+\Pro(\FinVect_k) = \LinComp_k$; and since $\Set = \Ind(\FinSet)$ we get
+$\Set^{\op} = \Pro(\FinBool) \simeq \CABA$, while $\Bool^{\op} = \Pro(\FinSet) = \Stone$. All
+three dualities are the same formal move --- pass to the pro-completion --- and in that sense
+$\LinComp_{\FF_q}$ \emph{is} the $q$-analogue of $\CABA$.
+
+\item[(2) The structural answer: projective geometry.]
+Deform the recipe rather than the statement. Subobject lattices give
+$\Set \rightsquigarrow \Bool$ and $\Vect_q \rightsquigarrow \PG(n-1,q)$; recovery is
+Theorem~\ref{thm:ftpg} in place of Theorem~\ref{thm:setcaba}; the anti-automorphisms are
+polarities, classified by Theorem~\ref{thm:bvn} into exactly the three families of Part~I;
+and the whole thing degenerates to $\Bool$ at $q = 1$. This is the answer that makes the
+question's chain close.
+
+\item[(3) The answer at $q = 1$ itself.]
+The opposite of $\FF_1$-linear algebra is $\FinSet_{\ast}^{\op}$, which is Segal's category
+$\Gamma$ --- the indexing category for $\Gamma$-spaces and hence for $E_{\infty}$ (coherently
+commutative) structures in homotopy theory. Concretely:
+\begin{proposition}
+$\FinSet_{\ast}^{\op} \simeq \FinBool_{/2}$, the category of finite Boolean algebras equipped
+with a homomorphism to $2$, i.e.\ with a distinguished ultrafilter.
+\end{proposition}
+\begin{proof}
+$\FinSet_{\ast} = \FinSet_{1/}$, the coslice under the one-point set. Opposites exchange
+coslice and slice: $(\mathcal{C}_{1/})^{\op} = (\mathcal{C}^{\op})_{/1}$. Under
+$\FinSet^{\op} \simeq \FinBool$ the object $1$ corresponds to $P(1) = 2$. Finally a
+homomorphism $B \to 2$ is the same as an ultrafilter on $B$.
+\end{proof}
+So even the basepoint --- the $0$ of $\FF_1$-linear algebra --- has a Boolean shadow.
+\end{description}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Mai nafka minah.} Answer (1) is right if one asks
+\emph{what has the same shape}; answer (2) is right if one asks \emph{what does the same job};
+answer (3) is right if one asks \emph{what happens at the degenerate point}. They diverge
+because $\Set$ conflates its dualizing object with its subobject classifier and $\Vect_q$
+cannot, by Theorem~\ref{thm:notopos}. The disagreement should be kept, not resolved.}}
+\end{center}
+
+\section*{Coda}
+
+\begin{center}
+\begin{tabular}{ccc}
+\toprule
+$q$ general & $\longrightarrow$ & $q = 1$ \\
+\midrule
+$\Vect_{\FF_q}$ && $\FinSet_{\ast}$ \\
+projective geometry $\PG(n{-}1,q)$ && Boolean algebra $2^{[n]}$ \\
+polarity $W \mapsto W\perpp$ && complementation $S \mapsto S^{c}$ \\
+symmetric / alternating / Hermitian && (isotropy empty) \\
+quantum logic && classical logic \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+\noindent
+\emph{One keeps the duality and loses the splitting; at $q=1$ the splitting comes back, and
+with it, Boole.}
+
+\end{document}

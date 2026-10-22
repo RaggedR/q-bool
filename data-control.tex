@@ -1,0 +1,331 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{principle}[theorem]{Principle}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{reading}[theorem]{Reading}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Cov}{Cov}
+\newcommand{\Schub}{\mathfrak{S}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{confirmed}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{refuted}}}
+
+\title{\bfseries Two Planes\\[0.4em]
+\large the data/control distinction, and the three things it forces}
+\author{Robin Langer \and Claude}
+\date{21 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A container morphism is a pair $(u, f)$ of opposite variance: $u$ dispatches on
+shapes, $f$ routes positions, and $f$ runs backwards. Shapes form a bare set and
+positions carry structure, so the two components live in different categories.
+This note argues that the asymmetry is not incidental notation but the load-bearing
+wall of the formalism, and that one prohibition follows from it --- \emph{a
+container morphism may not look at the payload} --- from which three otherwise
+unrelated results follow.
+
+First, redundancy is available on one plane only: coding needs an addition, and
+shapes have none, so the control plane must be protected by replication rather
+than by codes (\texttt{error-correcting.pdf}). Second, a federation carries two
+independent obstructions, not one --- well-foundedness in $u$ and a class in
+$H^1$ in $f$ --- which resolves a question left open in
+\texttt{sheaf-federation.pdf} and is verified on running servers. Third, the
+flag container's Hecke algebra is an algebra of \emph{dispatch}, which is why
+Schubert polynomials, needing graded positions, do not appear
+(\texttt{schubert.pdf}).
+
+We then record what cannot be repaired: linearising the shapes collapses the two
+planes into one and forgets the shape set entirely. And we state the limit
+honestly --- real systems need data to influence control, so the formalism
+describes not a whole system but the fragment that can be checked statically. Its
+value is that it tells you exactly where that fragment ends.
+\end{abstract}
+
+\section{The distinction}
+
+\begin{definition}[the two planes]
+A container is $S \con P$: a set $S$ of \emph{shapes}, and for each $s$ an object
+$P s$ of \emph{positions}. A morphism $(S \con P) \to (T \con Q)$ is a pair
+\[
+  u : S \longrightarrow T,
+  \qquad
+  f_s : Q(u\,s) \longrightarrow P s .
+\]
+We call $u$ the \emph{control plane} and $f$ the \emph{data plane}.
+\end{definition}
+
+Three features, and each does work below.
+
+\begin{enumerate}[nosep,label=(\roman*)]
+\item \textbf{Opposite variance.} Control flows forward, data flows back.
+\item \textbf{Different categories.} $S$ lives in $\Set$; $P s$ lives in $\Vect$,
+      in $\FF_q$-spaces, or in whatever the base is.
+\item \textbf{One-way dependence.} $f$ may depend on $s$. $u$ may not depend on
+      the data.
+\end{enumerate}
+
+\begin{principle}[the prohibition]\label{prin:prohibit}
+A container morphism may not look at the payload. Equivalently: there is no
+data $\to$ control flow.
+\end{principle}
+
+Everything in this note is a consequence of Principle~\ref{prin:prohibit} or of
+the fact that (ii) is what sustains it.
+
+\section{First instance: redundancy lives on one plane}
+
+\begin{theorem}[\texttt{error-correcting.pdf}]\label{thm:code}
+Linear redundancy is available for positions and unavailable for shapes.
+\end{theorem}
+
+\begin{proof}[Reason]
+Redundancy means forming linear combinations, which requires an addition on the
+values protected. Positions span a vector space and have one. Shapes form a bare
+set: there is no $s_1 + s_2$.
+\end{proof}
+
+\begin{principle}[two planes, two mechanisms]
+Protect positions with codes. Protect shapes with replication, acknowledgement or
+consensus.
+\end{principle}
+
+The check that this is more than bookkeeping is that practice already obeys it and
+did not know why. Packet headers are protected by checksum-and-discard, never by
+coding across headers --- a corrupted header means the packet is dropped, not
+repaired. Storage systems replicate metadata and erasure-code data. A system that
+erasure-codes its payload and leaves its metadata on a single unreplicated path
+has not been made reliable; it has moved its single point of failure into the
+header. The formalism says this was not a design choice.
+
+\section{Second instance: a federation has two obstructions}
+
+This is the new claim of the present note, and it reinterprets a result obtained
+independently in \texttt{trace-and-class.pdf}.
+
+\emph{A Sheaf Theory of Federation} asked whether the trace obstruction on
+$\con$ and the class in $H^1$ are the same obstruction, offering two answers:
+they are the same, or one of the two models is wrong. Both are too tight.
+
+\begin{proposition}\label{prop:fed}
+In the ring of container morphisms, well-foundedness is a property of $u$ and the
+cohomology class is a property of $f$. Since the two components of a morphism are
+chosen independently, the two obstructions are independent.
+\end{proposition}
+
+The evidence is that the four handlers of the reference implementation all apply
+the transition function $\varepsilon$ in the same position --- to the reply, on
+the way back, which is the only position descent allows --- and differ only in
+what stops them: fuel, fuel recorded in the response type, a visited list, or
+nothing at all. What distinguishes the diverging handler from the terminating
+ones is therefore a property of the forward map's control flow, where no
+$\varepsilon$ occurs. Writing the recursion out,
+$\mathrm{Orient}(i) = \varepsilon_i \cdot \mathrm{Orient}(i+1)$, the argument
+never mentions $\varepsilon$.
+
+\begin{center}
+\small
+\begin{tabular}{llcccl}
+\toprule
+class & repair & $H^1$ & terminates & canonical & witness \\
+\midrule
+cylinder & none & $0$      & no  & ---  & abandoned at 8s, 757 hops \\
+cylinder & cut  & $0$      & yes & yes  & all three cuts agree \\
+mobius   & none & $\ne 0$  & no  & ---  & abandoned at 6s, 660 hops \\
+mobius   & cut  & $\ne 0$  & yes & no   & the three cuts disagree \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All four cells populate, on three live servers. The load-bearing cell is the
+first: on the cylinder the twisted sheaf has two global sections, nothing
+whatever obstructs descent, and the unbounded walk still does not return. A
+vanishing class did not buy termination, because termination was never what the
+class was about.
+
+\begin{corollary}
+The two planes obstruct different properties. Well-foundedness governs
+\emph{existence} --- is there an answer at all. The class governs
+\emph{canonicity} --- is the answer independent of the choice made to obtain it.
+Cutting an edge trades divergence for choice, and $H^1$ is exactly the price of
+the choice.
+\end{corollary}
+
+Checked by enumeration on all eight elements of $(\ZZ/2)^3$, together with the
+gauge invariance --- all $24$ gauge transformations move the cocycle and never
+move the verdict --- which is what makes the statement one about $H^1$ rather
+than about a chosen representative.
+
+\begin{remark}
+The sheaf model sees only the data plane, because $H^1$ is all it offers. The
+operational model sees only the control plane, because divergence is all it
+offers. Neither is wrong; each is complete on its own plane. That is why the
+question as posed had no good answer.
+\end{remark}
+
+\section{Third instance: the flag container's algebra is an algebra of dispatch}
+
+The flag container is $\sum_{w \in S_n} X^{\ell(w)}$: shapes are the permutations,
+positions over shape $w$ are the Bruhat cell $\FF_q^{\ell(w)}$. So the Weyl group,
+the Bruhat order and the Hecke algebra all live on the \emph{control} plane, and
+the cells are the data.
+
+\texttt{schubert.pdf} shows that the fibration forgetting the $i$-th subspace
+gives $S_i$ with $S_i^2 = (q+1)S_i$, hence $T_i = S_i - I$ satisfying the Hecke
+quadratic, with the braid relations holding and no nilpotent attached to any
+single index. Read through the present distinction, that result says: \emph{the
+algebra the container produces is the algebra of how it dispatches.}
+
+\begin{corollary}
+Schubert polynomials are not reachable because they are a data-plane refinement.
+$\Schub_w(x_1, \ldots, x_n)$ records the torus weights on positions; counting
+$\FF_q$-points records only how many positions there are. The one-variable shadow
+of $\Schub_w$ is $x^{\ell(w)}$, and the whole container decategorifies to the
+Poincar\'e polynomial $\sum_w x^{\ell(w)}$, which at $x = q$ is $[n]_q!$.
+\end{corollary}
+
+\begin{question}
+Grade the positions by the torus action, so that a position carries a weight and
+not merely a dimension. Does the multigraded flag container have
+$\Schub_w(x_1,\ldots,x_n)$ as its shape polynomial?
+\end{question}
+
+\section{Why the distinction cannot be repaired away}
+
+It is tempting to regard the set-ness of shapes as a limitation to be generalised
+away by making both planes linear. \texttt{q-container.pdf} Theorem~B says what
+happens.
+
+\begin{theorem}[Theorem~B, restated for this purpose]
+If the extension is taken to be $\bigoplus_s \Hom(P s, V)$ rather than
+$\sum_s \Hom(P s, V)$, the natural transformations collapse to
+$\Hom\bigl(\bigoplus_t Q t, \bigoplus_s P s\bigr)$, which forgets the shape set
+entirely.
+\end{theorem}
+
+\begin{corollary}\label{cor:wall}
+The distinction survives precisely because the two planes live in different
+categories. Collapse them into one and one does not obtain a more general theory;
+one obtains a single plane, and the control plane is the one that disappears.
+\end{corollary}
+
+So (ii) is the load-bearing wall, and Theorem~\ref{thm:code} is not an accident of
+presentation: shapes have no addition because shapes are in $\Set$, and they are
+in $\Set$ because that is the only thing keeping two planes from becoming one.
+
+\section{The agentic reading}
+
+\begin{reading}[stated as a reading, not a theorem]
+Prompt injection is data becoming control: a payload read by the dispatcher.
+Principle~\ref{prin:prohibit} says a container morphism cannot do this, since $u$
+is a function of the shape alone. The vulnerability class is therefore not
+mitigated within the formalism; it is \emph{unexpressible} in it.
+\end{reading}
+
+Two qualifications, because the claim is easy to overstate. Unexpressible in the
+fragment is not the same as absent from the system: a real agent does read its
+inputs and branch, and that part of it is outside the formalism by
+\S\ref{sec:outside}. What the discipline buys is that the unsafe flow must be
+written somewhere explicit, rather than arising by accident anywhere.
+
+And it explains the status of labels carried through a system. A trust label that
+is transported unchanged by $f$ and never consulted by $u$ is a
+\emph{passenger}: it needs no type discipline of its own, precisely because it
+never reaches the control plane.
+
+\section{What is outside, and the limit}\label{sec:outside}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+operation & morphism? & why \\
+\midrule
+encoding, syndrome extraction $s = Hy$ & yes & a matrix \\
+erasure decoding, pattern known & yes & pattern is metadata, recovery a matrix \\
+error correction, position unknown & \textbf{no} & must infer from the payload \\
+retransmission, rate adaptation & \textbf{no} & reads state and branches \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The line falls in exactly one place, every time: an operation is outside when data
+influences control. Note the split \emph{inside} decoding --- computing a syndrome
+is linear and therefore a morphism, while mapping a syndrome to an error vector is
+a search and therefore not. The formalism separates the algebra of decoding from
+the search.
+
+\begin{remark}[the honest limit]
+Real systems need data $\to$ control flow: retransmission, rate adaptation, error
+correction, any adaptive agent. The formalism therefore does not describe a whole
+system. It describes the fragment that can be checked statically, and its value is
+that it tells you exactly where that fragment ends. As
+\texttt{error-correcting.pdf} says plainly, it yields no new codes; what it yields
+is recoverability as a property of declared interfaces, computable by multiplying
+matrices, rather than established per-code and per-deployment.
+\end{remark}
+
+\begin{principle}[what to do with a boundary]
+When a system needs data to influence control, that is not a failure to
+formalise. It is a boundary one should be able to point at. Containers make you
+point at it.
+\end{principle}
+
+\section{Status}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{cp{0.40\textwidth}ll}
+\toprule
+\# & claim & source & verdict \\
+\midrule
+$1$ & redundancy unavailable for shapes & \texttt{error-correcting} & proved \\
+$2$ & the two federation obstructions are independent & \texttt{trace-and-class} & \OK{}, live + $8/8$ \\
+$3$ & flag container's algebra is Hecke, not nilCoxeter & \texttt{schubert} & proved + $5/5$ \\
+$4$ & linearising shapes collapses the planes & \texttt{q-container} Thm~B & proved \\
+$5$ & Prop.~\ref{prop:fed}: (1)--(4) are one distinction & this note & synthesis, new \\
+$6$ & injection is unexpressible in the fragment & this note & reading, not proved \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Companions.} \texttt{q-container.pdf},
+\texttt{error-correcting.pdf}, \texttt{schubert.pdf} in this directory;
+\texttt{trace-and-class.pdf} and \texttt{independence.ts} in
+\texttt{gold/federation}.
+
+\end{document}

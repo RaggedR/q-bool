@@ -1,0 +1,523 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black,citecolor=blue!45!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{thesisclaim}[theorem]{Thesis}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Cont}{\cat{Cont}}
+\newcommand{\Poly}{\cat{Poly}}
+\newcommand{\Lam}{\Lambda}
+\newcommand{\AW}{\mathrm{AW}(3)}
+\newcommand{\Weyl}{\mathcal{A}_1}
+\newcommand{\Weylq}{\mathcal{A}_1^{q}}
+\newcommand{\con}{\mathrel{\vartriangleright}}
+\newcommand{\norm}[1]{\lvert #1 \rvert}
+\newcommand{\dd}{\,d}
+\newcommand{\Had}{\odot}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\List}{List}
+\DeclareMathOperator{\Bag}{Bag}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\definecolor{amber}{rgb}{0.70,0.45,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{verified}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{fails}}}
+\newcommand{\MAYBE}{\textcolor{amber}{\textbf{open}}}
+
+\title{\bfseries The Organizing Theme Andrews--Askey--Roy Does Not Name\\[0.4em]
+\large A research programme: the Weyl algebra as the spine of the special-function
+pile, and containers as its categorification}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A standard special-functions reference reads as a jumbled pile because it presents the
+union of four mutually incompatible organizing themes and commits to none: the Askey
+scheme (order by parameter degeneration), monodromy (order by singularities on
+$\mathbb{P}^1$), Lie theory (order by which group's representations), and the
+holonomic/$D$-module view (order by rank). This note argues for the fourth, on the
+ground that it is the only one of which we already possess a categorification. Its
+central relation, $[\partial, x] = 1$, is exactly $DU - UD = I$ on Young's lattice ---
+Stanley's differential-poset axiom, the corollary targeted by
+\texttt{lascoux/lean-plan.md} step 1.8, and the identity that Fomin's local rules
+prove bijectively. The $q$-layer closes the loop with the rest of
+\texttt{q-bool/}: the $q$-Weyl relation $D_q M_x - q\,M_x D_q = 1$ is the Jackson row
+already present in the decategorification table of \texttt{q-container.tex}. The
+programme is therefore to climb the Askey scheme from its bottom --- Hermite, the Fock
+representation, $\Weyl$ --- towards its top --- Askey--Wilson, Zhedanov's $\AW$ ---
+carrying a container model up with us, and to stop honestly wherever the carrying
+fails. Five phases, each with a deliverable and a falsification condition. Phase C is
+flagged in advance as the likely point of failure, and \S6 says why.
+\end{abstract}
+
+\tableofcontents
+
+\section{The complaint, and the diagnosis}
+
+The complaint is that a comprehensive special-functions reference --- Andrews, Askey
+and Roy \cite{AAR} is the one at hand --- presents a pile. Chapter after chapter of
+families, each with its own orthogonality, recurrence, integral representation and
+generating function, and no evident reason why these families and not others.
+
+The diagnosis is not that the book is disorganised. It is that \emph{four} organizing
+themes exist, they do not agree, and a comprehensive book presents their union.
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llll@{}}
+\toprule
+theme & orders the pile by & the chart & canonical source \\
+\midrule
+Askey scheme & degeneration of parameters & a poset of limits & \cite{KLS} \\
+monodromy & singularities on $\mathbb{P}^1$ & confluence of punctures & \cite{WW} \\
+Lie theory & which group's irreps & group contraction & \cite{Miller,Vilenkin} \\
+holonomic / $D$-module & rank over the Weyl algebra & \emph{a finiteness theorem} & \cite{Zeil90,SST} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+They genuinely disagree. The Askey scheme orders by what happens as a parameter tends
+to a limit; monodromy orders by how many punctures the differential equation has;
+Lie theory orders by the dimension and type of a symmetry group; holonomy orders by a
+rank, and produces not a chart but a decision procedure. Any two of these cut the pile
+differently, which is why no two books' tables of contents agree.
+
+\begin{remark}[the cheap fix, stated first]\label{rem:cheap}
+If the immediate want is relief rather than a programme: the Askey scheme is a
+literal one-page directed graph, and Koekoek--Lesky--Swarttouw \cite{KLS} is organized
+\emph{as} the chart rather than around it, with the $q$-scheme as a parallel chart
+that \cite{AAR} does not have. Thirteen classical families become one poset with
+Askey--Wilson on top and Hermite at the bottom. Half an hour, and the pile is a poset.
+That is worth doing before anything below.
+\end{remark}
+
+\section{The thesis}
+
+\begin{thesisclaim}[\emph{ours}]\label{thesis}
+Of the four themes, the holonomic one is the organizing theme to adopt, because it is
+the only one whose central object we already possess a categorification of. Its
+central object is the Weyl algebra; our categorification of the Weyl algebra is
+Fomin's local rule, read as a vertical container isomorphism.
+\end{thesisclaim}
+
+The remainder of \S2 establishes the three links this depends on. None of the three is
+new; what is new, as far as we can tell, is putting them in one line.
+
+\subsection{Link 1: $DU - UD = I$ is the Weyl algebra}
+
+\begin{definition}\label{def:weyl}
+The (first) Weyl algebra is $\Weyl = \CC\langle x, \partial\rangle$ subject to
+$\partial x - x\partial = 1$.
+\end{definition}
+
+\begin{proposition}[standard]\label{prop:young-weyl}
+Let $\Lam = \CC[p_1,p_2,\dots]$ be the ring of symmetric functions and identify
+$\CC[\text{Young}] \cong \Lam$ by $\lambda \mapsto s_\lambda$. Then
+\[
+  U = \text{multiplication by } p_1, \qquad D = \partial/\partial p_1
+\]
+realise the up and down operators of Young's lattice --- $U s_\lambda = \sum_{\mu \gtrdot
+\lambda} s_\mu$ by the Pieri rule, and $D$ is its adjoint for the Hall inner product
+--- and satisfy $DU - UD = I$. This is Stanley's differential-poset axiom \cite{Stanley88}.
+\end{proposition}
+
+\begin{remark}[a multiplicity space, and a question]\label{rem:mult}
+Be precise about what representation this is. As an $\Weyl$-module,
+$\Lam = \CC[p_1]\otimes\CC[p_2,p_3,\dots]$, with $\Weyl$ acting on the first factor
+only. So Young's lattice carries the Fock representation \emph{with multiplicity
+space} $\CC[p_2,p_3,\dots]$; the higher power sums are spectators. The polynomial ring
+$\CC[x]$ with $x, d/dx$ --- whose orthogonal basis for the Gaussian measure is the
+Hermite polynomials, the bottom of the Askey scheme --- is the same representation with
+trivial multiplicity. Hence Question~\ref{q:mult} below.
+\end{remark}
+
+\subsection{Link 2: Fomin's rule is the bijective proof of that relation}
+
+Counting the fibres of the vertical container isomorphism of
+\texttt{hypergeometric.tex} \S5.2 gives
+\[
+  \norm{U\alpha \cap U\beta} = \delta_{\alpha\beta} + \norm{D\alpha \cap D\beta},
+\]
+which is $DU - UD = I$ coefficientwise. The $\delta_{\alpha\beta}$ is the growth-diagram
+label $x = 1$ being legal at exactly one face shape. This is step 1.8 of
+\texttt{lascoux/lean-plan.md}, and steps 1.3--1.5 are the rule, its reverse, and the
+two round trips; 1.3 is complete.
+
+\begin{remark}\label{rem:bijective}
+The content of Link 2 is that the relation of Definition~\ref{def:weyl} has a
+\emph{bijective} proof, uniform in $(\alpha,\beta)$, in which the two sides are fibres
+of one container and the relation is an isomorphism between them rather than an
+equation between numbers. That is what makes Thesis~\ref{thesis} more than a
+restatement: we do not merely know the relation, we have a morphism that witnesses it.
+\end{remark}
+
+\subsection{Link 3: holonomic means finite rank over the Weyl algebra}
+
+\begin{proposition}[reported, \cite{Zeil90}]\label{prop:holonomic}
+A function is \emph{holonomic} when it is annihilated by a left ideal of the Weyl
+algebra $\mathcal{A}_n$ of maximal possible dimension --- equivalently, when the
+$\mathcal{A}_n$-module it generates has finite holonomic rank. Holonomic functions are
+closed under sum, product, and definite summation or integration over a variable;
+identities between them are decidable, and the Wilf--Zeilberger machinery is the
+decision procedure.
+\end{proposition}
+
+So this theme does not produce a chart. It produces a finiteness statement: the pile is
+not a pile but the set of finite-rank modules over one algebra, and the apparent
+profusion of families is the profusion of ideals, not of phenomena. The reason for
+preferring it here is Thesis~\ref{thesis}: \emph{that algebra} is the one we can
+categorify.
+
+\subsection{The square}
+
+\[
+\begin{tikzcd}[row sep=2.0em, column sep=3.2em]
+\Cont \text{ (vertical isos)} \arrow[r, "\text{count fibres}"] \arrow[d, "q\text{-deform}"']
+  & \Weyl\text{-modules} \arrow[r, "\text{generating function}"] \arrow[d, "q\text{-deform}"]
+  & \text{special functions} \arrow[d, "q\text{-deform}"] \\
+\Cont_q \arrow[r, "\text{count fibres}"]
+  & \Weylq\text{-modules} \arrow[r]
+  & q\text{-special functions}
+\end{tikzcd}
+\]
+
+\noindent
+The top-left corner is \texttt{lascoux/}; the top-middle is Stanley and Zeilberger; the
+top-right is \cite{AAR}. The bottom row is \texttt{q-bool/}. Every arrow in the top row
+exists. The claim of the programme is that the rest of the square can be filled in, and
+the phases of \S4 are the attempts.
+
+\section{The $q$-layer is already half built}
+
+\begin{proposition}\label{prop:qweyl}
+Let $D_q f(x) = \dfrac{f(qx) - f(x)}{(q-1)x}$ be the Jackson derivative and $M_x$
+multiplication by $x$. Then
+\[
+  D_q M_x - q\, M_x D_q = 1 .
+\]
+\end{proposition}
+
+\begin{proof}
+$D_q(xf) = \dfrac{qx f(qx) - x f(x)}{(q-1)x} = \dfrac{q f(qx) - f(x)}{q-1}$ and
+$x D_q f = \dfrac{f(qx)-f(x)}{q-1}$, so
+$D_q(xf) - q\,x D_q f = \dfrac{q f(qx) - f(x) - q f(qx) + q f(x)}{q-1} = f(x)$. \OK
+\end{proof}
+
+\begin{corollary}[\emph{ours}]\label{cor:jackson-row}
+The decategorification table of \texttt{q-container.tex} contains the row
+``derivative $\partial$ (hyperplanes) $\leftrightarrow$ Jackson $D_q$'' and the row
+``$\mathrm{Ind}_*,\mathrm{Res}_*$ $\leftrightarrow$ multiplication, comultiplication''.
+Together these are the two generators of Proposition~\ref{prop:qweyl}. So a container
+model of the $q$-Weyl algebra is not a new construction to be invented: its generators
+are already in the table, and what is missing is the \emph{relation} --- the
+$q$-analogue of Link 2.
+\end{corollary}
+
+This is the single most encouraging fact in this note, and it is what makes Phase D
+cheap rather than speculative.
+
+\subsection{The top of the scheme}
+
+\begin{remark}[reported]\label{rem:AW}
+The Askey scheme has a top as well as a bottom. Askey--Wilson polynomials sit above
+every other family in \cite{KLS}, and the algebra governing them is Zhedanov's
+Askey--Wilson algebra $\AW$ \cite{Zhedanov,Terwilliger} --- three generators with
+$q$-commutator relations, degenerating down the scheme as the parameters degenerate.
+\end{remark}
+
+So the programme has a shape: $\Weyl$ at the bottom (Hermite, where we have a
+categorification), $\AW$ at the top (Askey--Wilson, where we have none), and the Askey
+scheme as the path between. Climb it carrying the container model, and record where the
+model stops being carried.
+
+\section{The programme}
+
+Five phases. Each states its deliverable, its dependencies, an honest confidence that
+it will work, and --- the part that matters --- what observation would kill it.
+
+\subsection*{Phase 0 --- orientation (days)}
+
+\begin{enumerate}[nosep,label=\textbf{0.\arabic*}]
+  \item Read the chart in \cite{KLS}, per Remark~\ref{rem:cheap}. Deliverable: the
+        poset, drawn, with the $q$-scheme beside it.
+  \item Read \cite{Zeil90}. Twenty pages, and it is the thesis statement for the
+        chosen theme.
+  \item Settle Question~3.9 of \texttt{hypergeometric.tex}: is the class of
+        $q$-containers closed under the Hadamard product, pulled back along $\dim$?
+        Cheap, independent of everything else, and needed by Phase D.
+\end{enumerate}
+
+\noindent\textbf{Confidence:} n/a, this is reading. \textbf{Cost:} under a week.
+
+\subsection*{Phase A --- the Weyl algebra at the container level}
+
+\textbf{Deliverable.} Finish \texttt{lascoux/} Phase 1 (steps 1.4--1.8): the reverse
+local rule, both round trips, the assembly as a vertical morphism in $\Cont$, and
+$DU - UD = I$ as a corollary with no \texttt{sorry}. Then the harder half: a container
+model of $\Weyl$ \emph{as an algebra}, not merely of its defining relation ---
+objects for $x$ and $\partial$, a composition, and the relation as a specified
+isomorphism.
+
+\textbf{Dependencies.} None. Step 1.3 is complete.
+
+\textbf{Confidence.} Steps 1.4--1.8: \textbf{high} (85\%). The reverse rule is the
+forward rule's six cases run backwards, and the only case needing new work is the
+bounce, where \texttt{diffRow} needs a counterpart that finds the row to \emph{remove}.
+The algebra model: \textbf{medium} (50\%), because composition of vertical morphisms
+over different shape pairs is exactly the composability problem that thesis \S4.2
+records as the optic obstruction.
+
+\textbf{Falsified if} the round trips of step 1.5 fail --- i.e.\ if the rule as stated
+is not a bijection on the nose but only up to something. That would not be a disaster
+(it would make the structure a lens rather than an iso, which \S4.2 half expects) but
+it would change every statement downstream from ``isomorphism'' to ``optic''.
+
+\subsection*{Phase B --- WZ certificates as container morphisms}
+
+\textbf{Deliverable.} An answer to Question~5.10 of \texttt{hypergeometric.tex}: is a
+Wilf--Zeilberger certificate a vertical morphism in $\Cont$ over the face data of a
+two-dimensional growth diagram? Calibration case: $q$-Vandermonde, laid out as a
+growth diagram rather than as a recurrence, whose bijection is already known
+(the subspace-intersection argument, \texttt{hypergeometric.tex} Cor.~6.6). The test is
+sharp: \emph{does the WZ certificate for $q$-Vandermonde reproduce the subspace
+bijection?}
+
+\textbf{Dependencies.} Phase A for the notion of vertical morphism; Phase 0.2.
+
+\textbf{Confidence.} \textbf{Medium-low} (35\%) in general, \textbf{high} (75\%) for
+the calibration case alone. The general obstruction is that WZ certificates are
+rational functions and need not take integer values, so there need be no bijection to
+find. The reason to try anyway is the payoff: if it works, a decision procedure becomes
+a machine for producing container isomorphisms.
+
+\textbf{Falsified if} the $q$-Vandermonde certificate is integral but demonstrably not
+the subspace bijection, \emph{and} no reindexing relates them. Then WZ and Fomin are
+cousins and \S5 of \texttt{hypergeometric.tex} should end at its Warning~5.7.
+
+\subsection*{Phase C --- the Askey scheme as a poset of containers}
+
+\textbf{Deliverable.} A container-level meaning for the \emph{edges} of the Askey
+scheme. Each edge is a parameter limit; the question is what a limit of containers is.
+
+\textbf{Dependencies.} Phases A and B; Phase 0.1.
+
+\textbf{Confidence.} \textbf{Low} (15\%), and this is flagged in advance as the likely
+point of failure of the whole programme. See \S6.
+
+\textbf{Falsified if} --- as expected --- the limits are genuinely analytic, i.e.\ the
+degenerations exist only after passing to series with real parameters. The honest
+outcome is then a sub-poset: the part of the Askey scheme whose edges \emph{are}
+container constructions, with the rest marked as outside.
+
+\subsection*{Phase D --- the $q$-layer}
+
+\textbf{Deliverable.} The $q$-analogue of Link 2: a container-level isomorphism whose
+fibre count is Proposition~\ref{prop:qweyl}. By Corollary~\ref{cor:jackson-row} the
+generators are already present, so the work is the relation.
+
+\textbf{Dependencies.} Phase A (for the pattern to imitate); Phase 0.3; and
+\emph{critically} Question~6.1 of \texttt{list-and-bag.tex} --- does $\Cont_q$ have a
+usable $K_0$? --- wherever a minus sign is needed.
+
+\textbf{Confidence.} \textbf{Medium-high} (60\%). Higher than Phase B because the
+target is a single relation rather than a general procedure, and because
+\texttt{hypergeometric.tex} \S6 argues the $q$-side is the structurally honest one:
+there the obligatory factor $(q;q)_n$ is $\norm{\GL_n(\FF_q)}$ up to the torus, i.e.\
+an automorphism group order by construction rather than by the accident that
+$(1)_n = \norm{S_n}$.
+
+\textbf{Falsified if} $K_0(\Cont_q)$ does not exist usefully. Then the $q$-layer is
+confined to statements with no subtraction in them, which excludes the commutator.
+
+\subsection*{Phase E --- Lean}
+
+\textbf{Deliverable.} Phase A formalised (this is already \texttt{lascoux/lean/}); the
+$q$-Weyl relation of Proposition~\ref{prop:qweyl} formalised, which is elementary; and
+whichever of B and D survive.
+
+\textbf{Dependencies.} Whatever it formalises.
+
+\textbf{Confidence.} \textbf{High} (80\%) for what is in scope, because
+\texttt{lascoux/lean-plan.md} \S2 has already inventoried Mathlib and the missing
+pieces are known: no Schur polynomials, no RSK, no Hall inner product.
+
+\textbf{Warning.} Proposition~\ref{prop:young-weyl} as stated needs the Hall inner
+product, which Mathlib does not have. Either prove $DU - UD = I$ combinatorially on
+Young diagrams --- which is what step 1.8 does, and is the reason that step is phrased
+as a cardinality and not as an operator identity --- or accept a substantial detour.
+Prefer the former. The operator phrasing is for this note, not for the kernel.
+
+\section{Dependency summary}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llll@{}}
+\toprule
+phase & needs & confidence & status \\
+\midrule
+0 \ orientation & --- & n/a & not started \\
+A \ Weyl at container level & --- & 85\% / 50\% & step 1.3 done \\
+B \ WZ as container morphism & A, 0.2 & 35\% / 75\% & \MAYBE \\
+C \ Askey scheme as poset & A, B, 0.1 & 15\% & \MAYBE, see \S6 \\
+D \ the $q$-layer & A, 0.3, $K_0$ question & 60\% & generators present \\
+E \ Lean & the above & 80\% & \texttt{lascoux/lean/} live \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{What would kill the programme, and the one that probably will}
+
+Recorded separately from the phases, because a programme that cannot say how it fails
+is not a programme.
+
+\begin{enumerate}[label=\textbf{F\arabic*},leftmargin=2.6em]
+  \item \textbf{Degeneration is analytic, not combinatorial.} The edges of the Askey
+        scheme are limits: $q \to 1$, a parameter $\to \infty$, a rescaling. Limits are
+        not container operations; they are not operations on $\Poly$ at all, which is a
+        rig category with no notion of convergence. \emph{This is the expected failure,
+        and it is Phase C.} The likely honest outcome is that the container reading
+        covers the \emph{vertices} of the scheme (each family, at integer parameters)
+        and none of the \emph{edges}, leaving a discrete set where a poset was wanted.
+  \item \textbf{No minus signs.} $\Poly$ and $\Cont_q$ are rig categories. A commutator
+        $DU - UD$ needs subtraction, so Link 2 at the container level works only because
+        it is phrased as $\norm{U \cap U} = \delta + \norm{D \cap D}$ --- all additions.
+        Any step that genuinely needs the difference needs
+        $K_0$, which is Question~6.1 of \texttt{list-and-bag.tex} and is open.
+  \item \textbf{Non-integral certificates.} Phase B's general case, as above.
+  \item \textbf{The multiplicity space is a coincidence.} If $\CC[p_2,p_3,\dots]$ in
+        Remark~\ref{rem:mult} has nothing to do with the higher parameters of the Askey
+        families, then the bottom of the scheme is where the categorification lives and
+        there is no ladder to climb.
+\end{enumerate}
+
+\begin{warning}[the shape of the honest outcome]\label{warn:honest}
+Taking F1 and F4 together, the most likely true statement at the end of this programme
+is narrower than Thesis~\ref{thesis}: \emph{the Weyl algebra is categorified by
+containers; the Askey scheme is not}. That would still be worth having. It would say
+that the organizing theme \cite{AAR} lacks is the holonomic one, that the holonomic
+one has a combinatorial foundation, and that the scheme sitting on top of it is an
+analytic structure that the combinatorics does not see. Three sentences, all of them
+checkable, is a better outcome than an unfalsifiable programme.
+\end{warning}
+
+\section{Out of scope, with reasons}
+
+\begin{description}[leftmargin=1.8em,style=nextline,nosep]
+\item[Asymptotics and orthogonality measures.] The analytic heart of \cite{AAR}. Every
+technique there is estimation, and nothing in \S2 bears on it. Not a gap --- a
+different subject.
+\item[Painlev\'e and isomonodromy.] The natural continuation of the monodromy theme,
+which this note does not adopt. Deliberately left to one side; if Phase C fails as
+expected, monodromy is where to look next, because confluence of punctures is a
+genuinely structural operation in a way that parameter limits are not.
+\item[Multivariable and GKZ.] \cite{SST} organizes multivariable hypergeometric
+functions by toric geometry, and the polytope is plausibly a container-like object.
+This is the most interesting excluded item and should be revisited after Phase D, not
+before.
+\item[Macdonald polynomials.] Already scoped out of
+\texttt{lascoux/lean-plan.md}, for the reasons given there. The same reasons apply.
+\end{description}
+
+\section{Open questions, collected}
+
+\begin{question}\label{q:mult}
+Does the multiplicity space $\CC[p_2,p_3,\dots]$ of Remark~\ref{rem:mult} correspond to
+the higher parameters of the Askey families? Concretely: is there an assignment of
+families in the scheme to subspaces or quotients of $\CC[p_2,p_3,\dots]$ under which
+degeneration is a map of multiplicity spaces? If yes, F4 is answered and Phase C has a
+mechanism. If no, the programme stops at the Fock representation.
+\end{question}
+
+\begin{question}\label{q:aw}
+Is there a container model of $\AW$? Equivalently: does Zhedanov's algebra have a
+presentation in which the relations are fibre-count identities with no subtraction, as
+$DU - UD = I$ does in the form $\norm{U\cap U} = \delta + \norm{D\cap D}$? This is the
+top-of-the-scheme question and it is the right one to ask before attempting Phase C,
+because a negative answer here closes Phase C immediately and cheaply.
+\end{question}
+
+\begin{question}\label{q:lens}
+If Phase A's step 1.5 shows the local rule is an optic rather than an isomorphism ---
+which thesis \S4.2 half predicts --- what does the \emph{decategorification} of an
+optic look like? An isomorphism decategorifies to an equation. A lens decategorifies
+to what?
+\end{question}
+
+\begin{thebibliography}{99}
+
+\bibitem{AAR} George E.\ Andrews, Richard Askey and Ranjan Roy, \emph{Special
+Functions}, Encyclopedia of Mathematics and its Applications 71, Cambridge University
+Press, 1999.
+
+\bibitem{KLS} Roelof Koekoek, Peter A.\ Lesky and Ren\'e F.\ Swarttouw,
+\emph{Hypergeometric Orthogonal Polynomials and Their $q$-Analogues}, Springer, 2010.
+The Askey scheme and the $q$-Askey scheme, as charts.
+
+\bibitem{Miller} Willard Miller Jr., \emph{Lie Theory and Special Functions},
+Academic Press, 1968.
+
+\bibitem{SST} Mutsumi Saito, Bernd Sturmfels and Nobuki Takayama, \emph{Gr\"obner
+Deformations of Hypergeometric Differential Equations}, Springer, 2000.
+
+\bibitem{Stanley88} Richard P.\ Stanley, \emph{Differential posets}, J.\ Amer.\ Math.\
+Soc.\ \textbf{1} (1988), 919--961.
+
+\bibitem{Terwilliger} Paul Terwilliger, \emph{The universal Askey--Wilson algebra},
+SIGMA \textbf{7} (2011), 069.
+
+\bibitem{Vilenkin} N.\ Ja.\ Vilenkin, \emph{Special Functions and the Theory of Group
+Representations}, AMS Translations of Mathematical Monographs 22, 1968.
+
+\bibitem{WW} E.\ T.\ Whittaker and G.\ N.\ Watson, \emph{A Course of Modern Analysis},
+4th ed., Cambridge University Press, 1927. Ch.\ X for the hypergeometric equation and
+its singularities.
+
+\bibitem{Zeil90} Doron Zeilberger, \emph{A holonomic systems approach to special
+functions identities}, J.\ Comput.\ Appl.\ Math.\ \textbf{32} (1990), 321--368.
+
+\bibitem{Zhedanov} Alexei S.\ Zhedanov, \emph{``Hidden symmetry'' of Askey--Wilson
+polynomials}, Theoret.\ and Math.\ Phys.\ \textbf{89} (1991), 1146--1157.
+
+\end{thebibliography}
+
+\end{document}

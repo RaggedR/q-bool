@@ -1,0 +1,659 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black,citecolor=blue!45!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Grpd}{\cat{Grpd}}
+\newcommand{\FinSet}{\cat{FinSet}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\vect}{\cat{vect}}
+\newcommand{\op}{\mathrm{op}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\PGL}{PGL}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Ind}{Ind}
+\DeclareMathOperator{\Inc}{Inc}
+\DeclareMathOperator{\deng}{deg}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+\newcommand{\norm}[1]{\lvert #1 \rvert}
+\newcommand{\iso}{\mathrm{iso}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{verified}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{fails}}}
+
+\title{\bfseries Dirichlet Convolution over a Finite Field\\[0.4em]
+\large The multiplicative leg of Day convolution, and the torus that obstructs it}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Day convolution along $\sqcup$ on finite sets decategorifies to the Cauchy product of
+exponential generating functions; Day convolution along $\times$ decategorifies to the
+Dirichlet product. Over $\FF_q$ the additive leg is well understood --- it splits into a
+Levi version and a parabolic version, and both appear in the literature. The
+multiplicative leg does not appear at all. We define it, as Day convolution along
+$\otimes$ on the groupoid $\vect_q^{\iso}$ of finite-dimensional $\FF_q$-vector spaces,
+and identify its incidence algebra with the \emph{$q$-Dirichlet series}
+$\sum_{n\ge1} a_n\, n^{-s}/\norm{\GL_n(\FF_q)}$.
+
+The main structural finding is negative and, we think, the real content of the question.
+The additive leg works over $\FF_q$ because the torus factor $(q-1)^{\dim}$ in
+$\norm{\GL_n(\FF_q)}$ cancels in a convolution indexed by a \emph{sum} of dimensions. It
+does not cancel in a convolution indexed by a \emph{product}, because $ab \neq a+b$. In
+consequence the multiplicative leg has no $q \to 1$ limit, its convolution unit is
+$(q-1)\delta^1$ rather than $\delta^1$, and the $\FF_1$ dictionary breaks at exactly this
+point. Removing the torus by hand repairs the limit and produces a polynomial
+$q$-analogue
+\[
+  D_{a,b}(q) \;=\; q^{\binom{ab}{2}-\binom{a}{2}-\binom{b}{2}}\,
+  \frac{[ab]_q!}{[a]_q!\,[b]_q!}
+  \;\in\; \NN[q],
+  \qquad D_{a,b}(1) = \frac{(ab)!}{a!\,b!},
+\]
+but this normalisation is not a groupoid cardinality, so the repair costs the objective
+interpretation. We preserve the disagreement rather than resolving it.
+
+We contrast this with the other $\FF_q$-analogue of Dirichlet convolution --- the monoid
+of monic polynomials in $\FF_q[t]$, or of effective divisors on a curve --- which has an
+honest Euler product and an honest zeta function, but places $q$ in the cardinality of
+the index monoid rather than in automorphisms. The two are genuinely different
+deformations of the two things that $(\NN_{>0},\times)$ does at once, and only the Hall
+algebra of $\mathrm{Coh}(X)$ appears to do both.
+\end{abstract}
+
+\tableofcontents
+
+\section{The question}
+
+The slogan is that Day convolution is a tensor product is a Dirichlet series. Unpacked:
+
+\begin{definition}[Day convolution \cite{Day}]\label{def:day}
+For a small monoidal category $(\mathcal{A},\otimes)$, the functor category
+$[\mathcal{A},\Set]$ carries
+\[
+  (F \star G)(c) \;=\; \int^{a,b} \mathcal{A}(a \otimes b,\, c) \times F(a) \times G(b),
+\]
+the unique monoidal structure making the Yoneda embedding strong monoidal.
+\end{definition}
+
+The point is that $\mathcal{A}$ is an input, not a constant. Vary it and the
+decategorified product varies:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\mathcal{A}$ & Day convolution & decategorification \\
+\midrule
+$(\FinSet^{\iso}, \sqcup)$ & species product & $\sum a_n x^n/n!$ (Cauchy/EGF) \\
+$(\NN_{>0}, \times)$ & Dirichlet convolution & $\sum a_n n^{-s}$ \\
+$(\FinSet^{\iso}_{\neq\emptyset}, \times)$ & arithmetic product & $\sum a_n n^{-s}/n!$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The third row is Maia--M\'endez's arithmetic product \cite{MaiaMendez} and
+Baez--Dolan's arithmetic species \cite{BaezDolan}; it is the ``fat'' version of the
+second. Observe what the first and third rows have in common: $(\FinSet^{\iso},\sqcup,
+\times)$ is a \emph{rig} (bimonoidal) category, and the two Day convolutions are the two
+monoidal structures on one object.
+
+The question of this note is what happens when $\FinSet$ is replaced by $\vect_q$, the
+category of finite-dimensional vector spaces over $\FF_q$. That category is a rig
+category too, with $\oplus$ and $\otimes$. So the question has a precise form:
+
+\begin{quote}
+\emph{What are the two Day convolutions on $\vect_q$, and which classical series do they
+decategorify to?}
+\end{quote}
+
+The $\oplus$ leg turns out to be thoroughly studied, under several names, and to split
+into two inequivalent versions (\S\ref{sec:known}). The $\otimes$ leg appears to be
+absent from the literature. \S\ref{sec:tensor}--\S\ref{sec:torus} define it and explain
+why it has been absent: it is obstructed, and the obstruction is the maximal torus.
+
+\section{What is already known}\label{sec:known}
+
+\subsection{The additive leg, twice}
+
+Gálvez-Carrillo, Kock and Tonks \cite{GKT-comb} survey incidence algebras arising from
+decomposition spaces (equivalently $2$-Segal spaces \cite{DyckerhoffKapranov}), and their
+list of power series representations contains six entries. Two of them are over $\FF_q$:
+
+\begin{enumerate}[label=(\arabic*),start=5]
+\item $\zeta(z) = \sum_{k \ge 0} z^k/[k]_q!$, from the Waldhausen $S_\bullet$-construction
+on $\vect_q$; objectively, $q$-species with a version of the external product of
+Joyal--Street \cite{JoyalStreet}.
+\item $\zeta(z) = \sum_{k \ge 0} z^k/\norm{\Aut(\FF_q^k)}$, from the monoidal nerve of
+$(\vect_q^{\iso},\oplus,0)$; objectively, the `Cauchy' product of $q$-species in the sense
+of Morrison \cite{Morrison}.
+\end{enumerate}
+
+Their section coefficients are, respectively,
+\[
+  \qbin{n}{k}
+  \qquad\text{and}\qquad
+  \frac{\norm{\Aut(\FF_q^n)}}{\norm{\Aut(\FF_q^k)}\norm{\Aut(\FF_q^{n-k})}}
+  \;=\; q^{k(n-k)}\qbin{n}{k}.
+\]
+The first counts subobjects with prescribed quotient (short exact sequences); the second
+counts ordered direct-sum decompositions. The difference is $q^{k(n-k)} = \norm{U_P}$, the
+order of the unipotent radical of the parabolic: the Waldhausen version induces from the
+parabolic, the monoidal-nerve version from the Levi. GKT make the same point
+structurally, observing that the map $\mathrm{Dec}_\bot \cat{M} \to \cat{W}$ is
+\emph{not} an equivalence because ``taking complements'' has no inverse in the linear
+case.
+
+\begin{warning}[Prior art for \texttt{q-container.tex}]\label{warn:prior}
+Proposition~\emph{(Day convolution over $\FF_q$)} and Proposition~\emph{(the Hall product
+over $\FF_q$)} of the companion note \texttt{q-container.tex}, together with the
+correction identifying the discrepancy as Levi-versus-parabolic, are the content of
+\cite[\S{}Linear examples and the Waldhausen $S_\bullet$-construction]{GKT-comb}. The
+$q$-binomial coalgebra there is credited further back to D\"ur \cite{Dur}. The companion
+note's derivation is independent and its emphasis (containers, the Jackson derivative) is
+not GKT's, but the two propositions should be cited to GKT and D\"ur rather than claimed.
+\end{warning}
+
+\begin{remark}[The two additive zetas differ by a Borel]
+The ratio of the two normalisations is
+\[
+  \frac{\norm{\GL_n(\FF_q)}}{[n]_q!} \;=\; q^{\binom{n}{2}}(q-1)^n
+  \;=\; \norm{U_B}\cdot\norm{T},
+\]
+verified symbolically for $n \le 8$. So the parabolic and Levi zeta functions differ by
+the order of the Borel, factored into its unipotent and toral halves. Both halves recur
+below, in different roles: $\norm{U_B}$ is the obstruction on the additive leg, $\norm{T}$
+on the multiplicative one. That is the organising observation of this note.
+\end{remark}
+
+\subsection{The multiplicative leg, at \texorpdfstring{$q=1$}{q=1}}
+
+For the classical multiplicative leg, GKT compute the monoidal nerve $\cat{A}$ of
+$(\FinSet^{\iso}_{\neq\emptyset},\times,1)$, with section coefficients
+\[
+  \delta^m * \delta^n \;=\; \frac{(mn)!}{m!\,n!}\,\delta^{mn},
+\]
+and incidence algebra isomorphic to the exponential Dirichlet series via $\delta^m \mapsto
+m^{-s}/m!$, with $\zeta = \sum_{k>0} k^{-s}/k!$. Baez \cite{Baez2025} pushes this further:
+a scheme $X$ of finite type over $\ZZ$ determines a \emph{zeta species} $Z_X$, whose
+Dirichlet series is the arithmetic zeta function of $X$; a $Z_X$-structure on a finite set
+is a way of making it a semisimple commutative ring $k$ together with a $k$-point of $X$.
+Finite fields are already present in that story --- but as the \emph{structures} being
+counted, not as the base over which the categories are taken. It is a categorification of
+$\prod_p \zeta_{X_p}$, not a deformation of $\zeta$.
+
+\subsection{The gap}
+
+Arranging the four combinations:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & additive ($\sqcup$, $\oplus$) & multiplicative ($\times$, $\otimes$) \\
+\midrule
+$\FinSet$ & species product, EGF & arithmetic product, Dirichlet \\
+$\vect_q$ & Morrison / Joyal--Street, $q$-EGF & \textbf{---} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The empty cell is the subject of the rest of this note. Searches of the arXiv corpus for
+the conjunction of $q$-species, Dirichlet series, the Kronecker embedding $\GL_a \times
+\GL_b \hookrightarrow \GL_{ab}$, and groupoid-cardinality zeta functions return nothing;
+Morrison's $q$-species paper \cite{Morrison} treats subspaces, flags, direct-sum
+decompositions and linear maps, all additive. We do not claim the cell is empty in the
+literature at large, only that we did not find it.
+
+\section{The multiplicative leg over \texorpdfstring{$\FF_q$}{Fq}}\label{sec:tensor}
+
+\begin{definition}[$q$-arithmetic species]
+Let $\vect_q^{\iso,\times} = \bigsqcup_{n\ge1} B\GL_n(\FF_q)$ be the groupoid of nonzero
+finite-dimensional $\FF_q$-vector spaces and isomorphisms, monoidal under $\otimes$ with
+unit $\FF_q$. A \emph{$q$-arithmetic species} is an object of
+$\Grpd_{/\vect_q^{\iso,\times}}$, equivalently a functor $\vect_q^{\iso} \to \Grpd$. Their
+convolution is Day convolution along $\otimes$:
+\[
+  (F \star G)(V) \;=\; \sum_{A \otimes B \,\cong\, V} F(A) \times G(B),
+\]
+the sum being over the homotopy fibre of $\otimes$ over $V$.
+\end{definition}
+
+Since $(\vect_q^{\iso},\otimes,\FF_q)$ is a monoidal groupoid, its monoidal nerve is a
+Segal, hence decomposition, space, and GKT's machinery applies verbatim.
+
+\begin{proposition}[Section coefficients]\label{prop:sect}
+Writing $\delta^n$ for the name of an $n$-dimensional space,
+\[
+  \delta^a * \delta^b \;=\; c_{a,b}\,\delta^{ab},
+  \qquad
+  c_{a,b} \;=\; \frac{\norm{\GL_{ab}(\FF_q)}}{\norm{\GL_a(\FF_q)}\,\norm{\GL_b(\FF_q)}}.
+\]
+\end{proposition}
+
+\begin{proof}
+The homotopy fibre of $d_1$ over $V$ has objects $(A,B,\varphi)$ with $\varphi : A \otimes
+B \xrightarrow{\ \sim\ } V$. Projecting to $\vect^{\iso}\times\vect^{\iso}$, the fibre over
+$(A,B)$ is a set of cardinality $\norm{\Aut V}$, acted on by $\Aut A \times \Aut B$;
+groupoid cardinality of the homotopy quotient is $\norm{\Aut V}/(\norm{\Aut A}\norm{\Aut
+B})$ irrespective of freeness of the action. This is GKT's Corollary on section
+coefficients for monoidal groupoids.
+\end{proof}
+
+\begin{remark}[The action is not free, and this is not a defect]
+Unlike $S_a \times S_b \hookrightarrow S_{ab}$, the Kronecker embedding $\GL_a \times
+\GL_b \to \GL_{ab}$ has kernel $\FF_q^\times$, embedded antidiagonally as $(\lambda,
+\lambda^{-1})$. Hence the homotopy fibre is a groupoid with generic stabiliser
+$\FF_q^\times$, and $c_{a,b}$ is in general \emph{not} an integer: the number of
+$\GL_a\times\GL_b$-orbits is $(q-1)\,c_{a,b}$. Symbolic computation confirms that
+$(q-1)c_{a,b} \in \ZZ[q]$ for all pairs tested. The multiplicative leg is intrinsically
+stacky in a way the additive leg is not.
+\end{remark}
+
+\begin{proposition}[$q$-Dirichlet series]\label{prop:qdir}
+The incidence algebra of the monoidal nerve of $(\vect_q^{\iso},\otimes,\FF_q)$ is
+isomorphic to the algebra of formal Dirichlet series under the usual product, via
+\[
+  \Inc \;\longrightarrow\; \Bigl\{\textstyle\sum_{n>0} a_n n^{-s}\Bigr\},
+  \qquad
+  \delta^n \;\longmapsto\; \frac{n^{-s}}{\norm{\GL_n(\FF_q)}},
+\]
+under which the canonical zeta element $\zeta = \sum_{n>0}\delta^n$ maps to
+\[
+  \boxed{\;\zeta_q^{\otimes}(s) \;=\; \sum_{n \ge 1} \frac{n^{-s}}{\norm{\GL_n(\FF_q)}}\;}
+\]
+\end{proposition}
+
+\begin{proof}
+Setting $c_n = 1/\norm{\GL_n}$ we have $c_a c_b/c_{ab} = c_{a,b}$, which is exactly the
+condition for $\delta^n \mapsto c_n n^{-s}$ to be multiplicative.
+\end{proof}
+
+This is the literal $q$-analogue of the Baez--Dolan zeta $\sum_{k>0} k^{-s}/k!$, with
+$\norm{S_n}$ replaced by $\norm{\GL_n(\FF_q)}$ throughout. It is well defined, and it is
+the honest output of the machinery. It is also, in two specific respects, wrong.
+
+\section{The torus obstruction}\label{sec:torus}
+
+\begin{lemma}[Why the additive leg works]\label{lem:cancel}
+Write $\norm{\GL_n(\FF_q)} = \norm{U_B}\cdot\norm{T}\cdot[n]_q!$ with $\norm{U_B} =
+q^{\binom n 2}$ and $\norm{T} = (q-1)^n$. In a convolution indexed by dimension, the toral
+factor contributes
+\[
+  \frac{(q-1)^{\,\dim(A\otimes B)}}{(q-1)^{\dim A}(q-1)^{\dim B}}
+  \;=\;
+  (q-1)^{\,\dim(A\otimes B) - \dim A - \dim B}.
+\]
+For $\otimes = \oplus$ the exponent is $ (k + (n-k)) - k - (n-k) = 0$ identically, and the
+torus cancels. For $\otimes$ the exponent is $ab - a - b$, which vanishes only for $(a,b)
+\in \{(2,2)\}$ and for the degenerate cases involving $a$ or $b$ equal to $1$ with the
+opposite sign.
+\end{lemma}
+
+\begin{proof}
+Immediate; $\dim$ is additive for $\oplus$ and multiplicative for $\otimes$, while the
+torus exponent is additive in both cases. Verified symbolically for all $a,b \le 5$.
+\end{proof}
+
+This single arithmetic fact accounts for all three pathologies of
+Proposition~\ref{prop:qdir}.
+
+\begin{corollary}[The unit is not $\delta^1$]
+$c_{1,n} = \norm{\GL_n}/(\norm{\GL_1}\norm{\GL_n}) = 1/(q-1)$, independent of $n$. Hence
+the convolution unit is $(q-1)\delta^1$, not $\delta^1$. Classically the unit object of
+$(\FinSet,\times)$ is the singleton, with trivial automorphism group; over $\FF_q$ the
+unit object is the line $\FF_q$, whose automorphism group is $\FF_q^\times$ of order
+$q-1$. The multiplicative unit has a torus and cannot be rigidified away.
+\end{corollary}
+
+\begin{theorem}[No $\FF_1$ limit]\label{thm:nolimit}
+$\lim_{q\to1} c_{a,b}$ exists and equals $(ab)!/(a!\,b!)$ if and only if $ab = a+b$. For
+$ab > a+b$ the limit is $0$; for $ab < a+b$ it is $\infty$.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:cancel}, $c_{a,b} = (q-1)^{ab-a-b}\,q^{e}\,[ab]_q!/([a]_q![b]_q!)$ with
+$e = \binom{ab}2 - \binom a2 - \binom b2$; the second and third factors have finite nonzero
+limits $1$ and $(ab)!/(a!b!)$ respectively, so the limit is governed entirely by
+$(q-1)^{ab-a-b}$.
+\end{proof}
+
+Explicitly, at $(a,b) = (2,3)$: $\lim_{q \to 1} c_{2,3} = 0$, against the classical
+$6!/(2!3!) = 60$. The $\FF_1$ dictionary, which sends $\GL_n(\FF_q) \rightsquigarrow S_n$,
+fails on the multiplicative leg. It does not fail because the dictionary is wrong; it
+fails because the dictionary is $\norm{\GL_n(\FF_q)}/\norm{T} \to n!$, i.e.\ $\FF_1$-points
+are monomial matrices modulo the torus, and only the additive leg lets the torus cancel by
+itself.
+
+\subsection{The rigidified normalisation, and what it costs}
+
+\begin{definition}
+Set $c_n^{\mathrm{rig}} = \norm{T}/\norm{\GL_n} = 1/(q^{\binom n2}[n]_q!)$, and
+\[
+  D_{a,b}(q) \;=\; \frac{c^{\mathrm{rig}}_a c^{\mathrm{rig}}_b}{c^{\mathrm{rig}}_{ab}}
+  \;=\;
+  q^{\binom{ab}{2}-\binom{a}{2}-\binom{b}{2}}\;\frac{[ab]_q!}{[a]_q!\,[b]_q!}.
+\]
+\end{definition}
+
+\begin{theorem}\label{thm:D}
+$D_{a,b}(q) \in \NN[q]$; it is a polynomial with nonnegative integer coefficients, of
+degree $2\bigl(\binom{ab}2 - \binom a2 - \binom b2\bigr)$, symmetric in $a$ and $b$, with
+$D_{1,n} = 1$ and $D_{a,b}(1) = (ab)!/(a!\,b!)$.
+\end{theorem}
+
+\begin{proof}[Verification]
+Computed symbolically for all pairs in the table below; the degree formula and
+nonnegativity were checked coefficientwise. We do not have a proof of nonnegativity in
+general --- see Question~\ref{q:interp}.
+\end{proof}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+$(a,b)$ & $\deg D_{a,b}$ & $D_{a,b}(2)$ & $D_{a,b}(1)$ & $(ab)!/(a!b!)$ \\
+\midrule
+$(1,n)$ & $0$  & $1$ & $1$ & $1$ \\
+$(2,2)$ & $8$  & $560$ & $6$ & $6$ \\
+$(2,3)$ & $22$ & $19\,998\,720$ & $60$ & $60$ \\
+$(2,4)$ & $42$ & $44\,213\,490\,155\,520$ & $840$ & $840$ \\
+$(3,3)$ & $60$ & $24\,787\,851\,120\,790\,732\,800$ & $10\,080$ & $10\,080$ \\
+$(2,5)$ & $68$ & $6\,107\,726\,516\,162\,836\,561\,920$ & $15\,120$ & $15\,120$ \\
+$(3,4)$ & $114$ & $1.902\times10^{36}$ & $3\,326\,400$ & $3\,326\,400$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warning}[The repair is not objective]
+$c^{\mathrm{rig}}_n$ is not the reciprocal of the cardinality of any automorphism group.
+One might hope to realise it by projectivising --- replacing $B\GL_n$ by $B\PGL_n$, which
+is natural given that $\FF_q^\times$ is exactly the kernel of the Kronecker embedding ---
+but $\norm{\PGL_n} = \norm{\GL_n}/(q-1)$ removes one factor of $(q-1)$, not $n$ of them,
+and the limit still fails for $ab - a - b \neq 1$. Dividing by the full diagonal torus is
+not a quotient by a group acting on the groupoid. So
+Theorem~\ref{thm:D} produces the right polynomial and the right $\FF_1$ limit at the cost
+of the objective interpretation that motivated the construction.
+\end{warning}
+
+\begin{question}[Mai nafka minah]
+Is there a monoidal groupoid, or more generally a decomposition space, whose section
+coefficients are $D_{a,b}(q)$? Equivalently: is there a category of ``$\FF_q$-vector
+spaces with a rigidified torus'' closed under $\otimes$? A positive answer would give the
+multiplicative leg an objective footing; a proof of impossibility would establish that
+Dirichlet convolution over $\FF_q$ is \emph{intrinsically} $\FF_1$-incompatible, which is
+the more interesting outcome.
+\end{question}
+
+\begin{question}\label{q:interp}
+$D_{a,b}(q)$ has nonnegative coefficients in every case tested. What does it count?
+Classically $(ab)!/(a!b!)$ counts the ways of endowing a set of size $ab$ with an
+$a \times b$ rectangle structure, divided by nothing --- it is
+$\norm{S_{ab}}/(\norm{S_a}\norm{S_b})$, the index of the product action subgroup. The
+$q$-analogue should count tensor decompositions of $\FF_q^{ab}$ modulo the torus, weighted
+by some statistic; the $q$-exponent $\binom{ab}2 - \binom a2 - \binom b2$ suggests an
+inversion-type statistic on pairs of flags.
+\end{question}
+
+\section{The \texorpdfstring{$q$}{q}-M\"obius function}
+
+Being invertible ($c_1 \neq 0$), $\zeta_q^{\otimes}$ has a Dirichlet inverse
+$\mu_q$. In the rigidified normalisation of Theorem~\ref{thm:D} the first values are:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+$n$ & $\mu_q(n)$ & $\mu_q(n)\big|_{q\to1}$ \\
+\midrule
+$1$ & $1$ & $1$ \\
+$2$ & $-\dfrac{1}{q(q+1)}$ & $-1/2$ \\[0.5em]
+$3$ & $-\dfrac{1}{q^3(q+1)(q^2+q+1)}$ & $-1/6$ \\[0.5em]
+$4$ & $\dfrac{q^8+q^7+2q^6+q^5+q^4-1}{q^6(q+1)^2(q^2+1)(q^2+q+1)}$ & $5/24$ \\[0.5em]
+$5$ & $-\dfrac{1}{q^{10}(q+1)^2(q^2+1)(q^2+q+1)(q^4+q^3+q^2+q+1)}$ & $-1/120$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}
+For $p$ prime, $\mu_q(p) = -1/(q^{\binom p2}[p]_q!) = -c^{\mathrm{rig}}_p$, specialising to
+$-1/p!$ at $q=1$.
+\end{proposition}
+
+\noindent
+This is the $q$-analogue of the M\"obius function of the \emph{exponential} Dirichlet
+zeta, not of Riemann's: at $q=1$ the values are $1, -\frac12, -\frac16, \frac5{24},
+-\frac1{120}, \frac{119}{720}, \dots$, agreeing with $\bigl(\sum_k k^{-s}/k!\bigr)^{-1}$.
+Note in particular that $\mu_q$ is not supported on squarefree integers and takes values
+in $\QQ(q)$ rather than $\{0,\pm1\}$. That is already true classically for the fat
+version; it is not a $q$-phenomenon.
+
+\section{The other Dirichlet: \texorpdfstring{$\FF_q[t]$}{Fq[t]} and effective divisors}
+\label{sec:functionfield}
+
+There is a second, entirely different $\FF_q$-analogue of the second row of the table in
+\S1, and it is the one arithmetic actually uses.
+
+\begin{definition}
+Let $\mathcal{M}_q$ be the multiplicative monoid of monic polynomials in $\FF_q[t]$,
+viewed as a discrete monoidal category, with $\norm{f} = q^{\deg f}$. Day convolution on
+$[\mathcal{M}_q, \Set]$ is
+\[
+  (F \star G)(f) \;=\; \coprod_{gh = f} F(g) \times G(h),
+\]
+decategorifying to the product of Dirichlet series $\sum_f a_f \norm{f}^{-s}$.
+\end{definition}
+
+Three things happen at once here, all of them absent from \S\ref{sec:tensor}.
+
+\paragraph{The Euler product is a statement about Day convolution.}
+$\mathcal{M}_q$ is the free commutative monoid on the monic irreducibles $P$. Day
+convolution over a coproduct of monoids is the completed tensor product of the factors, so
+\[
+  [\mathcal{M}_q,\Set]_\star \;\simeq\; \widehat{\bigotimes_{P}}\; [\NN,\Set]_\star ,
+\]
+and the Euler product $\prod_P (1-\norm{P}^{-s})^{-1}$ is the decategorification of that
+equivalence. It is not a theorem about zeta functions; it is the statement that Day
+convolution respects free generation. Nothing of the sort holds in
+\S\ref{sec:tensor}: $1/\norm{\GL_{mn}} \neq 1/(\norm{\GL_m}\norm{\GL_n})$ even for coprime
+$m,n$, so $\zeta_q^{\otimes}$ has no Euler product.
+
+\paragraph{Dirichlet collapses into Cauchy.}
+$\deg : (\mathcal{M}_q,\times) \to (\NN,+)$ is strong monoidal, so pushing forward along it
+carries Dirichlet convolution to Cauchy convolution. Writing $u = q^{-s}$, every Dirichlet
+series over $\FF_q[t]$ is an ordinary power series in $u$, and
+\[
+  \zeta_{\FF_q[t]}(s) \;=\; \sum_{f} \norm{f}^{-s} \;=\; \sum_{n\ge0} q^n u^n
+  \;=\; \frac{1}{1-qu}.
+\]
+Rationality of Weil zeta functions is, at this level, the assertion that the additive and
+multiplicative legs are not independent over $\FF_q$ --- the grading fuses them. Over
+$\ZZ$ there is no such grading, and $\zeta$ is not rational.
+
+\paragraph{The primes are counted by the cyclotomic identity.}
+Equating the Euler product with the closed form gives
+\[
+  \prod_{n\ge1}(1-u^n)^{-I(n)} \;=\; \frac{1}{1-qu},
+  \qquad
+  I(n) = \frac1n \sum_{d \mid n} \mu(d)\, q^{n/d},
+\]
+verified as formal power series to order $u^8$. $I(n)$ is simultaneously the number of
+monic irreducibles of degree $n$, the number of primitive necklaces, and the dimension of
+the degree-$n$ part of the free Lie algebra on $q$ generators. At $q=2$:
+$2,1,2,3,6,9,\dots$
+
+\begin{remark}
+Everything in this section works verbatim for a smooth projective curve $X/\FF_q$ with
+$\mathcal{M}_q$ replaced by the monoid of effective divisors, free commutative on the
+closed points, giving $Z_X(u)$. Categorifying the \emph{fibres} rather than the index
+monoid --- replacing divisors by coherent sheaves --- gives Kapranov's Hall algebra of
+$X$.
+\end{remark}
+
+\section{Mai nafka minah}
+
+Four constructions, all defensible as ``Day convolution over a finite field'':
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& Waldhausen & monoidal nerve & $\otimes$ & $\FF_q[t]$ \\
+& (parabolic) & of $\oplus$ (Levi) & (this note) & (divisors) \\
+\midrule
+section coefficient & $\qbin nk$ & $q^{k(n-k)}\qbin nk$ & $\dfrac{\norm{\GL_{ab}}}{\norm{\GL_a}\norm{\GL_b}}$ & $1$ \\[0.8em]
+zeta & $\sum \frac{z^n}{[n]_q!}$ & $\sum \frac{z^n}{\norm{\GL_n}}$ & $\sum \frac{n^{-s}}{\norm{\GL_n}}$ & $\frac{1}{1-qu}$ \\[0.6em]
+$q$ lives in & automorphisms & automorphisms & automorphisms & index monoid \\
+Euler product & no & no & no & \OK \\
+$q \to 1$ limit & \OK & \OK & \NO\ (Thm~\ref{thm:nolimit}) & \OK \\
+obstruction & --- & $\norm{U_P}$ & $\norm{T}$ & --- \\
+in the literature & \cite{GKT-comb,JoyalStreet,Dur} & \cite{GKT-comb,Morrison} & --- & folklore \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The practical difference is sharp. If you want $q$-binomials, Hall--Littlewood and the
+representation theory of $\GL_n(\FF_q)$, you want the first two columns, and the question
+of which is settled by whether your induction is parabolic or Levi. If you want an Euler
+product, a functional equation and the Riemann hypothesis, you want the fourth column, and
+you should accept that the $q$ there is not deforming any automorphism group. The third
+column is the literal transport of the classical Dirichlet construction, and
+\S\ref{sec:torus} says it is obstructed.
+
+\begin{remark}[Preserving the disagreement]
+It is tempting to declare one of these ``the'' $q$-Dirichlet convolution. We think the
+honest reading is that $(\NN_{>0},\times)$ does two different things at once --- it is a
+lattice under divisibility, whose incidence algebra is Dirichlet convolution (Rota), and
+it is a free commutative monoid on the primes, whose Day convolution is Dirichlet
+convolution (Euler) --- and that these come apart over $\FF_q$. The lattice reading
+deforms to the subspace lattice, hence to columns 1--2. The free-monoid reading deforms to
+$\FF_q[t]$, hence to column 4. Column 3 is what you get by deforming the ambient rig
+category instead of either reading, and it is the one that breaks.
+\end{remark}
+
+\section{What would do both}
+
+The object that has $q$-deformed automorphisms \emph{and} an Euler product is the Hall
+algebra of $\mathrm{Coh}(X)$ for $X/\FF_q$: locally at each closed point it is the Hall
+algebra of finite modules over a discrete valuation ring, i.e.\ Hall--Littlewood; globally
+its index monoid is the divisor monoid of \S\ref{sec:functionfield}. Kapranov--Schiffmann--
+Vasserot's spherical Hall algebra of $\mathrm{Spec}(\ZZ)$ \cite{KSV} is the number-field
+analogue. In the decomposition-space language, this is the Waldhausen
+$S_\bullet$-construction of a category that is graded by an arithmetic monoid rather than
+by $\NN$ --- both legs at once, which is precisely what \S\ref{sec:torus} shows cannot be
+arranged inside $\vect_q$ alone.
+
+\begin{question}[For the container programme]
+The companion note \texttt{q-container.tex} takes positions in $\vect_q$. Replacing the
+fibre category by finite $\FF_q[t]$-modules gives positions a genuine Dirichlet weight
+$\norm{M} = q^{\ell(M)}$ alongside the additive $\oplus$; the Hall algebra of that
+category is Hall--Littlewood and its groupoid cardinality $\sum_M 1/\norm{\Aut M}$ is
+Cohen--Lenstra. Is there a container-level statement whose decategorification is the
+functional equation?
+\end{question}
+
+\section{Summary of claims}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.58\textwidth}>{\raggedright\arraybackslash}p{0.33\textwidth}@{}}
+\toprule
+claim & status \\
+\midrule
+Both additive legs over $\FF_q$, and the Levi/parabolic distinction, are in
+\cite{GKT-comb,Dur,Morrison,JoyalStreet} & prior art, see Warning~\ref{warn:prior} \\
+$\norm{\GL_n}/[n]_q! = q^{\binom n2}(q-1)^n = \norm{U_B}\norm{T}$ & \OK\ ($n\le8$) \\
+Day convolution along $\otimes$ gives $c_{a,b} = \norm{\GL_{ab}}/(\norm{\GL_a}\norm{\GL_b})$ &
+proved (Prop.~\ref{prop:sect}) \\
+Incidence algebra $\cong$ Dirichlet series via $\delta^n \mapsto n^{-s}/\norm{\GL_n}$ &
+proved (Prop.~\ref{prop:qdir}) \\
+Convolution unit is $(q-1)\delta^1$ & proved \\
+$c_{a,b}$ has no $q\to1$ limit unless $ab = a+b$ & proved (Thm~\ref{thm:nolimit}) \\
+$D_{a,b}(q) \in \NN[q]$ with $D_{a,b}(1) = (ab)!/(a!b!)$ & \OK\ (tabulated pairs);
+nonnegativity unproved in general \\
+$\mu_q(p) = -1/(q^{\binom p2}[p]_q!)$ & \OK\ ($p \le 7$) \\
+Cyclotomic identity / Euler product for $\FF_q[t]$ & \OK\ (to $u^8$); classical \\
+No prior treatment of the $\otimes$ leg found & search result, not a proof \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All symbolic verification is in \texttt{q-dirichlet-verify.py}.
+
+\begin{thebibliography}{99}
+
+\bibitem{Baez2025} John C. Baez, \emph{Dirichlet species and arithmetic zeta functions},
+arXiv:2502.01833.
+
+\bibitem{BaezDolan} John C. Baez and James Dolan, \emph{Zeta functions},
+\url{http://ncatlab.org/johnbaez/Zeta+functions} (2010).
+
+\bibitem{CooperYoung} Benjamin Cooper and Matthew B. Young, \emph{Hall algebras via
+2-Segal spaces}, arXiv:2409.19384.
+
+\bibitem{Day} Brian Day, \emph{On closed categories of functors}, Reports of the Midwest
+Category Seminar IV, Lecture Notes in Math. 137 (1970), 1--38.
+
+\bibitem{Dur} Arne D\"ur, \emph{M\"obius functions, incidence algebras and power series
+representations}, Lecture Notes in Math. 1202, Springer, 1986.
+
+\bibitem{DyckerhoffKapranov} Tobias Dyckerhoff and Mikhail Kapranov, \emph{Higher Segal
+spaces}, Lecture Notes in Math. 2244, Springer, 2019.
+
+\bibitem{GKT-comb} Imma G\'alvez-Carrillo, Joachim Kock and Andrew Tonks,
+\emph{Decomposition spaces in combinatorics}, arXiv:1612.09225.
+
+\bibitem{GKT1} Imma G\'alvez-Carrillo, Joachim Kock and Andrew Tonks, \emph{Decomposition
+spaces, incidence algebras and M\"obius inversion I: basic theory}, arXiv:1512.07573.
+
+\bibitem{JoyalStreet} Andr\'e Joyal and Ross Street, \emph{The category of representations
+of the general linear groups over a finite field}, J.\ Algebra 176 (1995), 908--946.
+
+\bibitem{KSV} Mikhail Kapranov, Olivier Schiffmann and Eric Vasserot, \emph{The spherical
+Hall algebra of $\mathrm{Spec}(\mathbb{Z})$}, arXiv:1202.4073.
+
+\bibitem{MaiaMendez} Manuel Maia and Miguel M\'endez, \emph{On the arithmetic product of
+combinatorial species}, arXiv:math/0503436.
+
+\bibitem{Morrison} Kent E. Morrison, \emph{An introduction to $q$-species}, Electron.\ J.\
+Combin.\ 12 (2005), arXiv:math/0512052.
+
+\end{thebibliography}
+
+\end{document}

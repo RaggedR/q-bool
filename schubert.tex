@@ -1,0 +1,345 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{refuted}[theorem]{Refuted conjecture}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\Rep}{\mathrm{Rep}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\Ind}{Ind}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+\newcommand{\Fl}{\mathrm{Fl}}
+\newcommand{\Schub}{\mathfrak{S}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{confirmed}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{refuted}}}
+
+\title{\bfseries The Flag Container\\[0.4em]
+\large why it gives Demazure operators and not Schubert polynomials}
+\author{Robin Langer \and Claude}
+\date{20 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Targets table of \texttt{q-container.pdf} has rows for the $q$-Leibniz rule,
+$q$-Pascal, Pieri--Littlewood--Richardson and Macdonald polynomials, and no row
+for Schubert polynomials. This note attempts to earn one and instead establishes
+that the row cannot be written in the form expected.
+
+Schubert polynomials are generated from the top class by divided differences
+$\partial_i f = (f - s_i f)/(x_i - x_{i+1})$, and the container derivative of
+\texttt{q-container.pdf} Theorem~D is the Jackson operator
+$D_q f = (f - \sigma_q f)/((1-q)x)$. Both have the shape
+(\emph{$1$ minus a group element}) over (\emph{a difference of weights}), Jackson
+dividing by a scaling and Demazure by a transposition; and a container already
+carries transpositions, since relabelling positions is what a container's symmetry
+\emph{is}. The conjecture was therefore that $\partial_i$ needs no new machinery.
+
+Half of that survives. Building the operator from the fibration that forgets the
+$i$-th subspace of a flag, we verify by exact enumeration
+($n \le 4$, $q = 2, 3$) that it descends to the cell module and satisfies the
+\emph{braid} relations, so $\Schub_w$ is independent of the reduced word at
+container level with no new machinery, as predicted. But the operator satisfies
+the \emph{Hecke} quadratic and not the nilCoxeter relation $\partial_i^2 = 0$;
+and we prove (Theorem~\ref{thm:nonil}) that no operator attached to a single
+index can be nilpotent unless $q = -1$. The container hands you an idempotent
+where Schubert polynomials need a nilpotent, and an idempotent divided difference
+is a \emph{Demazure} operator, whose polynomials are key polynomials.
+
+The consequence is a correction to the dictionary rather than an addition to it:
+counting $\FF_q$-points sees the Hecke algebra and the Poincar\'e polynomial
+$\sum_w q^{\ell(w)} = [n]_q!$, while divided differences live in the Chow ring,
+which is a different decategorification of the same cells.
+
+\medskip
+\noindent\emph{Companion:} \texttt{q-container.pdf}; its remark that the Hecke algebra is the endomorphism algebra of
+the flag container is the starting point. Code: \texttt{code/flag.py},
+results recorded in \texttt{code/FINDINGS.md}.
+\end{abstract}
+
+\section{The question, and why it is not idle}\label{sec:q}
+
+\texttt{q-container.pdf} observes that $\Ind_B^G \mathbf{1} = k[G/B]$ is a free
+module on a hom-set --- a container in the $k[-]$ sense --- and that
+$\End_G(\Ind_B^G \mathbf{1}) = H_n(q)$, so that \emph{the Hecke algebra is the
+endomorphism algebra of the flag container}. Since the Schubert basis of
+$H^*(\Fl_n)$ is indexed by the same Weyl group that indexes $H_n(q)$, it is
+natural to expect the Schubert calculus to be visible from the container side.
+
+The expectation has a precise form. Write $\partial_i$ for the divided difference
+and $D_q$ for the Jackson $q$-derivative of Theorem~D:
+\[
+  \partial_i f = \frac{f - s_i f}{x_i - x_{i+1}},
+  \qquad\qquad
+  D_q f = \frac{f - \sigma_q f}{(1-q)\,x}, \quad \sigma_q f(x) = f(qx).
+\]
+Both are \emph{divided differences for a group element}: a difference operator
+over the corresponding difference of weights. Theorem~D says the container
+derivative is the Jackson one, where the group element is the scaling $\sigma_q$.
+Containers carry the symmetric group on positions for free, so nothing new should
+be needed to build the operator with $s_i$ in place of $\sigma_q$.
+
+\begin{conjecture}[under test]\label{conj:nil}
+The flag container carries operators $\partial_i$, built from its own structure,
+generating the nilCoxeter algebra: $\partial_i^2 = 0$, together with the braid
+relations, so that $\Schub_w = \partial_{w^{-1}w_0}(x^\delta)$ is well defined.
+\end{conjecture}
+
+\begin{remark}[what would make this circular]
+Defining $\partial_i$ by its action on Schubert classes --- $\partial_i \Schub_w
+= \Schub_{ws_i}$ when $\ell(ws_i) < \ell(w)$ and $0$ otherwise --- and then
+verifying the nilCoxeter relations would verify nothing. Below the operator is
+built from the geometry and its relations are read off.
+\end{remark}
+
+\section{The flag container}
+
+\begin{definition}[flag container]\label{def:flag}
+Let $\Fl_n(\FF_q)$ be the set of complete flags $0 = F_0 < F_1 < \cdots < F_n =
+\FF_q^n$, and $E$ the standard flag. The \emph{relative position} of $F$ to $E$
+is the permutation $w \in S_n$ determined by the rank matrix
+$r_{ij} = \dim(E_i \cap F_j)$ via
+\[
+  w(j) = i \iff r_{ij} - r_{i-1,j} - r_{i,j-1} + r_{i-1,j-1} = 1 .
+\]
+The \emph{flag container} is $S_n \con \bigl(w \mapsto \FF_q^{\ell(w)}\bigr)$,
+with extension $\ext{\,\cdot\,}X = \sum_{w \in S_n} X^{\ell(w)}$.
+\end{definition}
+
+So the shapes are the permutations and the positions over shape $w$ are the cell
+$C_w$. This is a $q$-container in the sense of \texttt{q-container.pdf}
+Definition~2: the shapes form a set, the positions are $\FF_q$-spaces.
+
+\begin{proposition}[Bruhat, by enumeration]\label{prop:bruhat}
+$|\Fl_n(\FF_q)| = [n]_q!$ and $|C_w| = q^{\ell(w)}$ for every $w$. \OK{} for
+$(n,q) \in \{(2,2),(2,3),(3,2),(3,3),(4,2)\}$, computed from the rank matrix of
+Definition~\ref{def:flag} rather than assumed.
+\end{proposition}
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+$n$ & $q$ & flags & $[n]_q!$ & cells \\
+\midrule
+$2$ & $2$ & $3$   & $3$   & $2$  \\
+$2$ & $3$ & $4$   & $4$   & $2$  \\
+$3$ & $2$ & $21$  & $21$  & $6$  \\
+$3$ & $3$ & $52$  & $52$  & $6$  \\
+$4$ & $2$ & $315$ & $315$ & $24$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The operator, built from the geometry}
+
+\begin{definition}[the fibration, and its operator]\label{def:op}
+Let $\pi_i$ forget the $i$-th subspace of a flag. Define $S_i$ on functions on
+$\Fl_n(\FF_q)$ by pushforward followed by pullback:
+\[
+  (S_i f)(F) \;=\; \sum_{\pi_i(F') = \pi_i(F)} f(F').
+\]
+\end{definition}
+
+Nothing about Schubert cells enters. Two things then have to be checked rather
+than assumed: that the fibre is what it should be, and that $S_i$ descends to the
+cell module at all.
+
+\begin{proposition}\label{prop:desc}
+Every fibre of $\pi_i$ has exactly $q+1 = |\mathbb{P}^1(\FF_q)|$ elements, and
+$S_i$ applied to a cell indicator is constant on cells, hence descends to the free
+module on $S_n$. \OK{}, $5/5$ cases.
+\end{proposition}
+
+\begin{example}[$n = 3$, $q = 2$, the operator read off]\label{ex:rule}
+In the basis of cell classes,
+\[
+  S_1[w] \;=\;
+  \begin{cases}
+    [w] + [w s_1], & \ell(w s_1) > \ell(w),\\[0.2em]
+    q[w] + q[w s_1], & \ell(w s_1) < \ell(w).
+  \end{cases}
+\]
+For instance $S_1[123] = [123] + [213]$ and $S_1[213] = 2[123] + 2[213]$.
+\end{example}
+
+\section{What it satisfies, and what it does not}
+
+\begin{proposition}\label{prop:rels}
+With $T_i := S_i - I$:
+\begin{enumerate}[nosep,label=(\alph*)]
+\item $S_i^2 = (q+1) S_i$, so $S_i/(q+1)$ is idempotent;
+\item $T_i^2 = (q-1) T_i + q I$, the Hecke quadratic;
+\item $T_i T_j T_i = T_j T_i T_j$ for $|i - j| = 1$, and $T_i T_j = T_j T_i$ for
+      $|i - j| \ge 2$;
+\item $T_i^2 \ne 0$ in every case tested.
+\end{enumerate}
+\OK{} for (a)--(c), $5/5$ cases, all $24$ cells at $n = 4$.
+\end{proposition}
+
+Part (c) is the half of Conjecture~\ref{conj:nil} that survives, and it survives
+exactly as predicted: the braid relations come from relabelling positions, need
+no new machinery, and are what makes $\Schub_w$ independent of the reduced word.
+
+Part (d) is the half that fails. It is worth being precise about how badly.
+
+\begin{theorem}[no divided difference at finite $q$]\label{thm:nonil}
+Fix $i$ and let $A_i$ be the subalgebra generated by $T_i$. Then
+$A_i = \operatorname{span}\{I, T_i\}$, and the only $u \in A_i$ with $u^2 = 0$ is
+$u = 0$, unless $q = -1$.
+\end{theorem}
+
+\begin{proof}
+$A_i = \operatorname{span}\{I, T_i\}$ because Proposition~\ref{prop:rels}(b)
+expresses $T_i^2$ in that span, so the span is closed under multiplication;
+\texttt{flag.py} confirms $T_i^2$ and $T_i^3$ lie in it for all cases tested.
+Write $u = aT_i + bI$. Then
+\[
+  u^2 = a^2 T_i^2 + 2ab\,T_i + b^2 I
+      = \bigl[a^2(q-1) + 2ab\bigr] T_i + \bigl[a^2 q + b^2\bigr] I .
+\]
+$T_i$ and $I$ are linearly independent, so $u^2 = 0$ forces both brackets to
+vanish. If $a = 0$ the second gives $b = 0$. If $a \ne 0$ the first gives
+$b = a(1-q)/2$, and substituting into the second,
+\[
+  a^2 q + \tfrac{1}{4}a^2 (1-q)^2 = 0
+  \;\Longleftrightarrow\;
+  4q + (1-q)^2 = 0
+  \;\Longleftrightarrow\;
+  (q+1)^2 = 0 . \qedhere
+\]
+\end{proof}
+
+\begin{corollary}
+No nilpotent divided difference exists on the flag container over any finite
+field, since $q \ge 2$.
+\end{corollary}
+
+\begin{remark}[the scope of the theorem, stated plainly]
+The theorem is about operators \emph{attached to a single index}, which is what
+a $\partial_i$ is. It does not claim the full algebra has no nilpotent elements
+--- $H_n(q)$ is a matrix algebra for generic $q$ and has many. What it claims is
+that none of them is a $\partial_i$, and the two-dimensionality of $A_i$ is what
+makes the affine search exhaustive rather than a sample. A box search over
+$|a|, |b| \le 6$ independently returns nothing in all five cases.
+\end{remark}
+
+\begin{refuted}\label{ref:nil}
+Conjecture~\ref{conj:nil} is \NO{} in its nilCoxeter half. The flag container
+produces $H_n(q)$, whose $q \to 0$ degeneration is the $0$-Hecke algebra of
+\emph{idempotent} operators, not the nilCoxeter algebra of nilpotent ones.
+\end{refuted}
+
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+operator & relation & generates \\
+\midrule
+$S_i/(q+1)$      & idempotent        & Demazure operators, \textbf{key polynomials} \\
+$T_i = S_i - I$  & Hecke quadratic   & $H_n(q)$, Hall--Littlewood, Green \\
+$\partial_i$     & nilpotent         & \textbf{Schubert polynomials} --- not reachable here \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{What the Schubert basis is, at container level}
+
+The refutation is not a dead end; it relocates the object.
+
+\begin{proposition}
+The flag container is $\sum_{w \in S_n} X^{\ell(w)}$, so a Schubert class is a
+\emph{shape} of the flag container together with its position space
+$\FF_q^{\ell(w)}$, and the one-variable shadow of $\Schub_w$ is $x^{\ell(w)}$.
+Decategorifying the whole container gives the Poincar\'e polynomial
+$\sum_w x^{\ell(w)}$, which at $x = q$ is $[n]_q!$.
+\end{proposition}
+
+This says why the divided differences were never going to appear. The
+multivariable $\Schub_w(x_1, \ldots, x_n)$ records the \emph{torus weights} on
+positions; a point count records only how many positions there are. The two
+decategorifications of the same cell decomposition are
+\[
+  \text{count } \FF_q\text{-points} \;\longrightarrow\; H_n(q), \ [n]_q!
+  \qquad\text{versus}\qquad
+  \text{Chow ring} \;\longrightarrow\; \partial_i, \ \Schub_w ,
+\]
+and \texttt{q-container.pdf} is built on the first.
+
+\begin{question}[the row the Targets table is missing]\label{q:graded}
+Grade the positions of the flag container by the $T$-action, so that a position
+carries a weight rather than only contributing to a dimension. Does the
+multigraded flag container have $\Schub_w(x_1,\ldots,x_n)$ as its shape
+polynomial, and do the divided differences appear as operations on the grading?
+\end{question}
+
+\begin{remark}[$q = -1$]
+Theorem~\ref{thm:nonil} fails exactly at $q = -1$, which is not a prime power and
+so lies outside the theory rather than inside it at a special point. We record
+the value and claim nothing from it.
+\end{remark}
+
+\section{Status of every claim}
+
+\begin{center}
+\small
+\begin{tabular}{clll}
+\toprule
+\# & claim & prior & verdict \\
+\midrule
+$5$ & Bruhat decomposition, by enumeration & --- & \OK{}, $5/5$ \\
+$6$ & braid relations hold at container level & $70\%$ & \OK{}, $n \le 4$ \\
+$7$ & $\partial_i^2 = 0$ at container level & $60\%$ & \NO{}, Thm~\ref{thm:nonil} \\
+$8$ & multigraded flag container gives $\Schub_w(x)$ & new & open, Q~\ref{q:graded} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Independently of the container side, all $6$ and all $24$ Schubert polynomials
+for $S_3$ and $S_4$ were computed in $\ZZ[x]$ by divided differences from
+$x^\delta$, with agreement across reduced words asserted at every step; this is
+the control, and it confirms $\Schub_{132} = x_1 + x_2$ and
+$\Schub_{321} = x_1^2 x_2$ against the standard tables.
+
+\medskip
+\noindent\textbf{Reproducing.} \texttt{python3 code/flag.py}. Exact enumeration
+over $\FF_2$ and $\FF_3$ for $n \le 4$; no sampling anywhere.
+
+\newcommand{\secindresref}{}
+\end{document}

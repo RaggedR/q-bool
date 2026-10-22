@@ -1,0 +1,505 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz-cd}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{principle}[theorem]{Design principle}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+
+\title{\bfseries Erasure Coding as Container Composition\\[0.4em]
+\large what the formalism actually tells you}
+\author{Robin Langer \and Claude}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A container morphism dispatches on a shape and then routes data without ever
+inspecting it. Over a finite field the routing becomes a matrix, so the morphism may
+form \emph{linear combinations} of its inputs --- and linear combinations of data are
+exactly what redundancy is made of. This note is about the engineering consequence.
+
+The claim is not that containers let you invent new codes. It is that when a system
+is written as a composite of container morphisms, \textbf{end-to-end recoverability
+becomes a rank computation on a matrix product}, decidable statically from the types,
+with no simulation and no per-code reasoning. Section~\ref{sec:composition} is the
+point of the document; everything before it is setup and everything after it is
+application.
+
+Two consequences fall out that are not obvious in advance: redundancy must be
+introduced strictly before the loss it protects against, because rank cannot be
+recovered downstream; and the control plane cannot be protected by coding at all,
+because shapes form a set and sets have no addition.
+
+\medskip
+\noindent\emph{Everything is defined. No coding-theory or networking background is
+assumed.}
+\end{abstract}
+
+\tableofcontents
+
+\section{The engineering problem}
+
+\begin{definition}[Erasure and error]
+A channel carries symbols and damages some of them.
+\begin{itemize}[nosep]
+  \item An \emph{erasure} is a symbol that is lost, \textbf{and you know which one}.
+  \item An \emph{error} is a symbol that is corrupted, and you do not know which.
+\end{itemize}
+\end{definition}
+
+Almost every distributed system is an erasure channel rather than an error channel.
+A network packet carries a checksum; if the checksum fails the packet is discarded
+rather than delivered corrupted, so the receiver observes a gap, not a lie. A disk
+either returns a block or reports a failure. A machine is either reachable or it is
+not. In every case the damage announces itself.
+
+This matters because the two failure modes sit on opposite sides of the container
+formalism, as \S\ref{sec:whatsoutside} makes precise: erasure decoding is a container
+morphism and error decoding is not.
+
+\begin{definition}[Redundancy]
+To survive loss you must transmit more symbols than you have message. If $k$ symbols
+of message are sent as $n > k$ symbols, the $n-k$ extra symbols are \emph{redundancy},
+and the ratio $n/k$ is the \emph{overhead}.
+\end{definition}
+
+There are two ways to spend that overhead, and the whole document turns on the
+difference.
+
+\begin{itemize}
+  \item \textbf{Replication}: send some symbols more than once. Cheap to reason
+        about; protects only against losing the specific symbols you duplicated.
+  \item \textbf{Coding}: send combinations of symbols. Protects against losing
+        \emph{any} sufficiently small set.
+\end{itemize}
+
+In container language that difference has a name. Replication is \emph{fan-out} ---
+one input feeding several outputs --- and it is available in $\Set$. Coding is
+\emph{fan-in} --- one output depending on several inputs --- and it is not.
+
+\section{The formalism, in one page}
+
+\begin{definition}[Container]
+A \emph{container} $S \con P$ is a set $S$ of \emph{shapes} together with, for each
+shape $s$, a set $P s$ of \emph{positions}. It denotes the datatype
+\[
+  \ext{S \con P} X \;=\; \sum_{s \in S} \bigl(P s \to X\bigr):
+\]
+choose a shape, then label every position with a value from $X$.
+\end{definition}
+
+Read $S$ as the \emph{control plane} --- the type, the header, the metadata --- and
+$P s$ as the \emph{data plane}, the slots that carry payload.
+
+\begin{definition}[Container morphism]
+A morphism $(S \con P) \to (T \con Q)$ is a pair
+\[
+  u : S \to T,
+  \qquad
+  f_s : Q(u\,s) \to P s \quad\text{for each } s,
+\]
+acting by $(s, \varphi) \mapsto (u\,s,\; \varphi \circ f_s)$.
+\end{definition}
+
+So a morphism does two things: $u$ reads the incoming shape and decides the outgoing
+shape (dispatch), and $f_s$ says, for each outgoing position, which incoming position
+supplies its value (wiring). The payload is never consulted --- the wiring depends on
+the shape alone. That restriction is what makes a morphism a finite, first-order,
+checkable object rather than an arbitrary program.
+
+\begin{definition}[$q$-container]
+A \emph{$q$-container} is the same with each $P s$ a finite-dimensional vector space
+over $\FF_q$, and each $f_s$ a \emph{linear} map. Its denotation is
+$\ext{S \con P}V = \sum_s \Hom_{\FF_q}(P s, V)$ for $V$ a vector space of payload
+values.
+\end{definition}
+
+Fix bases. Then $f_s$ is a matrix, and the value delivered to outgoing position $j$ is
+\[
+  \sum_i c_{ij}\cdot(\text{value at incoming position } i),
+\]
+the coefficients being the $j$-th column of that matrix.
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{The only difference.} In $\Set$, each column of
+the matrix would be forced to be a standard basis vector: every outgoing position
+copies exactly one incoming position. Over $\FF_q$ the columns are arbitrary. A column
+with two or more nonzero entries is an output that \emph{combines} two inputs --- and
+that is redundancy. Everything in this document is a consequence of that one
+sentence.}}
+\end{center}
+
+\begin{remark}[How much is gained]
+With two incoming and three outgoing positions over $\FF_2$, there are $64$ matrices
+and only $8$ of them are of the $\Set$ kind. The other $56$ are the codes.
+\end{remark}
+
+\section{Codes, from scratch}
+
+\begin{definition}[Linear code, generator matrix]
+A \emph{linear code} of length $n$ and dimension $k$ over $\FF_q$ --- written
+$[n,k]$ --- is a $k$-dimensional subspace of $\FF_q^{n}$. An \emph{encoder} is a
+linear injection $\FF_q^{k} \to \FF_q^{n}$; written in bases it is a $k \times n$
+matrix $G$, the \emph{generator matrix}, and the transmitted word is $mG$ for a
+message row vector $m$.
+\end{definition}
+
+In the container reading, $G$ is exactly the map $f_s$ of the encoding morphism: it
+has one column per transmitted symbol, and that column says which combination of
+message symbols the symbol carries.
+
+\begin{example}[Parity versus duplication]\label{ex:parity}
+Two encoders, both taking $k=2$ message symbols to $n=3$ transmitted symbols over
+$\FF_2$, so both with the same overhead $3/2$.
+\[
+  \text{parity: } (x,y) \mapsto (x,\, y,\, x+y),
+  \qquad
+  \text{duplication: } (x,y) \mapsto (x,\, y,\, x).
+\]
+Their generator columns are
+$\{(1,0), (0,1), (1,1)\}$ and $\{(1,0), (0,1), (1,0)\}$. Computed exhaustively:
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\toprule
+ & parity & duplication \\
+\midrule
+patterns of $2$ surviving symbols that recover & $3/3$ & $2/3$ \\
+single losses that are fatal & none & symbol $2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Same cost, strictly different protection. Duplication defends only the symbol it
+duplicates; the parity symbol defends all of them. And the parity encoder is precisely
+the one whose third column is not a standard basis vector --- the one that is not a
+$\Set$-container morphism.
+\end{example}
+
+\begin{definition}[MDS]
+A code is \emph{maximum distance separable} if \emph{any} $k$ of the $n$ transmitted
+symbols determine the message. This is the best possible: you cannot recover $k$
+unknowns from fewer than $k$ values.
+\end{definition}
+
+\begin{example}[Reed--Solomon]\label{ex:rs}
+Treat the $k$ message symbols as the coefficients of a polynomial $f$ of degree less
+than $k$ over $\FF_q$, and transmit its values $f(\alpha_1), \dots, f(\alpha_n)$ at
+$n$ distinct points. Any $k$ of those values determine $f$ by interpolation, so the
+code is MDS. The generator matrix is a Vandermonde matrix, and every transmitted
+symbol depends on \emph{all} $k$ message symbols: maximal fan-in.
+
+For $q = 5$, $k = 3$, $n = 5$, evaluating at $x = 1,2,3,4,5$, exhaustive check:
+\begin{center}
+\small
+\begin{tabular}{cc}
+\toprule
+symbols arriving & loss patterns that recover \\
+\midrule
+$2$ & $0/10$ \\
+$3$ & $10/10$ \\
+$4$ & $5/5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Any three of the five suffice, and two never do.
+\end{example}
+
+\section{Composition: what the formalism tells you}\label{sec:composition}
+
+This is the section that earns the formalism. Everything so far could have been said
+without containers; what follows could not be said so cleanly.
+
+\subsection{A pipeline is a matrix product}
+
+Morphisms compose: given $(u,f) : C \to D$ and $(v,g) : D \to E$, the composite is
+\[
+  (v \circ u,\;\; s \mapsto f_s \circ g_{u s}),
+\]
+shapes forwards, positions backwards. So a system built as a chain of stages has a
+single \emph{transfer matrix}, obtained by multiplying the stages' matrices, and a
+single \emph{dispatch}, obtained by composing their shape maps.
+
+\begin{proposition}[Recoverability]\label{prop:recover}
+Let $C$ have position space $\FF_q^{k}$ (the message) and let $h : P_E \to \FF_q^{k}$
+be the composite position map of a pipeline $C \to E$. A receiver holding the
+labelling at $E$ can reconstruct the original message if and only if
+\[
+  \rank h \;=\; k .
+\]
+\end{proposition}
+
+\begin{proof}
+The receiver holds $\psi = \varphi \circ h$ where $\varphi : \FF_q^{k} \to V$ is the
+message. If $h$ is surjective, every message position is $h(e)$ for some $e$ and
+$\varphi(h(e)) = \psi(e)$ determines it. If not, $\varphi$ is unconstrained on any
+complement of $\im h$, and distinct messages produce identical observations.
+\end{proof}
+
+\begin{corollary}[Erasures]
+Modelling a loss as the stage that selects the surviving coordinates, the message is
+recoverable exactly when \textbf{the surviving columns of the generator matrix span
+$\FF_q^{k}$}. MDS means every $k$-subset of columns does.
+\end{corollary}
+
+Note that the lossy channel itself is a $\Set$-container morphism: it merely selects
+coordinates, and each of its columns is a standard basis vector. \emph{Loss is pure
+routing. Only the protection against it requires $\FF_q$.}
+
+\subsection{Rank cannot be recovered}
+
+\begin{theorem}[Monotonicity]\label{thm:mono}
+$\rank(h_1 h_2) \leq \min(\rank h_1, \rank h_2)$. Hence along a pipeline the rank of
+the composite is non-increasing, and is bounded by the rank of every individual stage.
+\end{theorem}
+
+\begin{corollary}[The weakest stage decides]
+End-to-end recoverability fails as soon as any single stage has rank below $k$, and no
+subsequent stage can repair it.
+\end{corollary}
+
+\begin{example}[A three-stage pipeline]\label{ex:pipeline}
+Take the Reed--Solomon code of Example~\ref{ex:rs}, $k=3$, $n=5$ over $\FF_5$.
+\begin{center}
+\small
+\begin{tabular}{llc}
+\toprule
+stage & what it does & rank of composite (need $3$) \\
+\midrule
+encode & $3 \to 5$, Vandermonde & $3$ \\
+channel & drops symbols $2$ and $5$ & $3$ \quad still recoverable \\
+forwarder & relays only two of the three it holds & $2$ \quad \textbf{lost, permanently} \\
+\bottomrule
+\end{tabular}
+\end{center}
+The channel loss was survivable; an innocuous-looking downstream node that forwards
+two of three was not. Nothing downstream can help, by Theorem~\ref{thm:mono}.
+\end{example}
+
+\begin{principle}\label{prin:before}
+Redundancy must be introduced strictly \emph{before} the loss it protects against.
+Adding parity after a lossy stage cannot raise the rank of the composite, so it
+protects nothing that was already destroyed.
+\end{principle}
+
+This is obvious once stated and routinely violated in practice --- it is exactly the
+mistake of checksumming a value after the unreliable step that produced it.
+
+\subsection{What this buys you operationally}
+
+\begin{enumerate}[nosep]
+  \item \textbf{Static analysis instead of testing.} Recoverability under a given loss
+        pattern is a rank computation on a product of matrices, decided from the
+        declared types of the stages. No simulated packet loss, no fault injection,
+        no statistical confidence.
+  \item \textbf{Localisation of fault.} Because rank is monotone, the first stage at
+        which the running rank drops below $k$ is the stage responsible. That is a
+        bisection over the pipeline, not a search over loss patterns.
+  \item \textbf{Heterogeneous pipelines compose.} Stages may use different codes,
+        different field sizes after base change, and different overheads. There is one
+        composite and one criterion, rather than a separate argument per code.
+  \item \textbf{A budget.} $\rank h - k$ at any stage is the number of further
+        erasures that stage can still absorb. It is a resource, spent by losses and
+        replenished only by encoding.
+\end{enumerate}
+
+\section{Real applications}
+
+Each is defined from scratch, then read through the formalism.
+
+\subsection{RAID and erasure-coded storage}
+
+\begin{definition}[RAID]
+\emph{Redundant Array of Independent Disks}: store data across several disks with
+redundancy so that the array survives disk failures. RAID~5 adds one parity block
+computed as the XOR of the data blocks and survives one disk failure; RAID~6 adds two
+independent check blocks and survives two.
+\end{definition}
+
+RAID~5 is Example~\ref{ex:parity} with more symbols: the $[n, n-1]$ single parity
+check code. RAID~6 is an $[n, n-2]$ code, usually Reed--Solomon.
+
+\begin{definition}[Erasure-coded storage]
+The general version. Split an object into $k$ blocks, encode to $n$ blocks, place the
+$n$ blocks on $n$ different machines. Any $k$ surviving machines reconstruct the
+object. A typical configuration stores $10$ data blocks as $14$, surviving four
+simultaneous machine failures at $1.4\times$ overhead --- against $3\times$ overhead
+for keeping three complete copies, which survives only two failures.
+\end{definition}
+
+The container reading: shapes are \emph{which machines responded}, positions are the
+blocks. A read is the composite of the encoding morphism with the selection morphism
+determined by the responding set, and Proposition~\ref{prop:recover} is the
+reconstruction criterion. The comparison with replication is
+Example~\ref{ex:parity} at scale: replication is fan-out and defends only what it
+copied; coding is fan-in and defends against any $n-k$ failures.
+
+\subsection{Multicast}
+
+\begin{definition}[Multicast]
+Sending the same data from one source to many receivers at once over a shared
+network, as opposed to \emph{unicast} (a separate transmission per receiver).
+\end{definition}
+
+The difficulty is that different receivers lose different packets, so there is no
+single retransmission that repairs everyone. With an erasure code there need not be:
+each receiver decodes as soon as it holds any $k$ symbols, and \emph{which} $k$ does
+not matter. In the formalism, one encoding morphism is composed with a different
+selection morphism per receiver, and the criterion is applied once per receiver
+against the same generator matrix.
+
+\subsection{Fountain (rateless) codes}
+
+\begin{definition}[Fountain code]
+The sender emits an unbounded stream of symbols, each a combination of the $k$ source
+symbols; a receiver collects any $k$ or slightly more and decodes, then leaves.
+\emph{Rateless} because $n$ is never fixed in advance.
+\end{definition}
+
+This is the right design when the loss rate is unknown or varies per receiver: rather
+than guess $n$, you let each receiver take what it needs. In the formalism the
+generator matrix has unboundedly many columns, and each receiver's composite is that
+matrix restricted to the columns it caught. The criterion is unchanged.
+
+\subsection{Random linear network coding}
+
+\begin{definition}[RLNC]
+Intermediate nodes in a network do not forward packets unchanged. Each node transmits
+\emph{random} $\FF_q$-linear combinations of the packets it has received, with the
+coefficient vector written into the packet header. A receiver accumulates packets
+until it holds $k$ independent combinations and then solves.
+\end{definition}
+
+No central code design is required; for $q$ large enough the random combinations are
+independent with high probability. This is the purest instance of the formalism:
+every node \emph{is} a $q$-container morphism, the whole network is their composite,
+and the coefficient header is literally the shape --- carried alongside the data
+precisely because the receiver must know which morphism was applied in order to
+invert it.
+
+\begin{remark}
+The coefficient vector travelling in the header is not an implementation detail. In
+the formalism the wiring depends on the shape, so the shape must accompany the data
+for the composite to be reconstructible at the far end. RLNC's packet format is the
+formalism's requirement, arrived at independently.
+\end{remark}
+
+\section{The control plane cannot be coded}
+
+\begin{theorem}
+Linear redundancy is available for positions and unavailable for shapes.
+\end{theorem}
+
+\begin{proof}[Reason]
+Redundancy means forming linear combinations, which requires an addition on the
+values being protected. Positions span a vector space and have one. Shapes form a bare
+set: there is no $s_1 + s_2$. Nor can this be repaired by making the shapes linear ---
+if the extension is taken to be $\bigoplus_s \Hom(P s, V)$ rather than
+$\sum_s \Hom(P s, V)$, the natural transformations collapse to
+$\Hom(\bigoplus_t Q t, \bigoplus_s P s)$, which forgets the shape set entirely.
+\end{proof}
+
+\begin{principle}[Two planes, two mechanisms]
+Protect positions with codes. Protect shapes with replication, acknowledgement or
+consensus. A system that erasure-codes its payload and leaves its metadata on a single
+unreplicated path has not been made reliable; it has moved its single point of failure
+into the header.
+\end{principle}
+
+Practice already reflects this. Packet headers are protected by checksum-and-discard,
+never by coding across headers; a corrupted header means the packet is dropped, not
+repaired. Storage systems replicate metadata while erasure-coding data. The formalism
+says this was not a choice.
+
+\section{What is outside the formalism}\label{sec:whatsoutside}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{ll}
+\toprule
+operation & a container morphism? \\
+\midrule
+encoding, adding redundancy & \textbf{yes} --- a matrix \\
+transmission loss & \textbf{yes} --- selection of coordinates, in $\Set$ \\
+syndrome extraction $s = Hy$ & \textbf{yes} --- a matrix \\
+erasure decoding, loss pattern known & \textbf{yes} --- pattern in the shape, recovery in the positions \\
+error correction, position unknown & \textbf{no} --- must infer from the payload \\
+retransmission, congestion response & \textbf{no} --- reads state and branches \\
+rate adaptation & \textbf{no} --- reacts to observed loss \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The line is drawn in exactly one place: a container morphism may not look at the
+payload. Erasure decoding survives because the loss pattern is metadata, and given the
+pattern the recovery is a matrix --- for the $[3,2]$ parity code, the three surviving
+pairs give three different recovery matrices, dispatched by $u$ and applied by $f$.
+Error correction does not survive, because the pattern would have to be inferred from
+the data.
+
+Note the split inside decoding: computing a syndrome is linear and therefore a
+morphism, while mapping a syndrome to an error vector is a search and therefore not.
+The formalism separates the algebra of decoding from the search.
+
+\begin{warning}
+None of this yields new codes. Reed--Solomon is from 1960 and network coding from
+2000. What the formalism supplies is a type discipline in which a system's
+recoverability is a property of its declared interfaces, computable by multiplying
+matrices, rather than a property established per-code and per-deployment.
+\end{warning}
+
+\section*{Summary}
+
+\begin{enumerate}[nosep]
+  \item A container morphism dispatches on shape and routes data without reading it.
+        Over $\FF_q$ it may combine inputs linearly, which is what redundancy is.
+  \item A pipeline is a matrix product; recoverability is
+        $\rank = k$ (Prop.~\ref{prop:recover}).
+  \item Rank is non-increasing, so the weakest stage decides and redundancy must
+        precede loss (Thm.~\ref{thm:mono}, Principle~\ref{prin:before}).
+  \item Recoverability is therefore decidable statically from the types, and the
+        failing stage is localisable by bisection.
+  \item Positions can be coded; shapes cannot. Data and metadata require different
+        protection mechanisms, and this is forced rather than conventional.
+\end{enumerate}
+
+\appendix
+\section{Reproducing the computations}
+
+\begin{verbatim}
+  q-bool/code/erasure.py   examples 1-3 of this document
+  $ python3 erasure.py
+\end{verbatim}
+
+\noindent
+All arithmetic is exact over prime fields, by exhaustive enumeration of loss patterns.
+
+\end{document}

@@ -1,0 +1,439 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black,citecolor=blue!45!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\FinSet}{\cat{FinSet}}
+\newcommand{\Poly}{\cat{Poly}}
+\newcommand{\Cont}{\cat{Cont}}
+\newcommand{\vect}{\cat{vect}}
+\newcommand{\iso}{\mathrm{iso}}
+\newcommand{\con}{\mathrel{\vartriangleright}}
+\newcommand{\norm}[1]{\lvert #1 \rvert}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\Bag}{Bag}
+\DeclareMathOperator{\List}{List}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{verified}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{fails}}}
+
+\title{\bfseries List and Bag, $\pi$ and $\sqrt{\pi}$\\[0.4em]
+\large The missing ordinary row of the decategorification table,
+and a Gaussian functional that counts $S_n$-quotients}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The ordinary generating series $O(x) = \sum x^n$ and the exponential one
+$E(x) = \sum x^n/n!$ satisfy
+\[
+  \int_{\RR} O(-x^2)\,dx = \pi,
+  \qquad
+  \int_{\RR} E(-x^2)\,dx = \sqrt{\pi}.
+\]
+Both are $\Gamma(\tfrac12)$ to a power. We read this containerwise. $O$ and $E$ are
+not two generating functions of one species but the exponential generating functions
+of two species, $L$ (linear orders) and $E$ (sets), which as containers are
+$\List$ and $\Bag$: the same shapes and positions, with and without the
+$S_n$-quotient. The functional $F \mapsto \int_{\RR} F(-x^2)\,dx$ sees the quotient,
+and Theorem~\ref{thm:main} says exactly what it charges for it: dividing the
+coefficients by $n!$ once costs one factor of $\Gamma(\tfrac12)$. The exponent $2$
+in the $\pi$ case and the $-s$ in the general case have different origins --- the
+first is the Gamma reflection formula at the self-dual Mellin exponent $\tfrac12$,
+which is what the squaring in $-x^2$ is for, and the second is the $n!$-divisions.
+Two obstructions are recorded honestly: $\Poly$ has no additive inverses, so $-x^2$
+is not an object and the computation lives in the Grothendieck ring of virtual
+species; and $\int_\RR$ is not a container operation but a second decategorification,
+whose nearest precedent is Spivak's entropy of a polynomial functor.
+\end{abstract}
+
+\section{The observation}
+
+\begin{proposition}\label{prop:obs}
+$\displaystyle\int_{\RR}\frac{dx}{1+x^2} = \pi$ and
+$\displaystyle\int_{\RR} e^{-x^2}\,dx = \sqrt{\pi}$.
+\end{proposition}
+
+Both are elementary; $O(-x^2) = 1/(1+x^2)$ because $O(x) = 1/(1-x)$, and
+$E(-x^2) = e^{-x^2}$ because $E(x) = e^x$. Checked numerically to $30$ digits:
+\OK. The integral must be taken over all of $\RR$; over $[0,\infty)$ one gets
+$\pi/2$ and $\sqrt{\pi}/2$ and the pattern is obscured.
+
+\begin{remark}[the termwise reading fails, and that is the content]\label{rem:termwise}
+One cannot obtain either number by integrating the series. $\int_\RR x^{2n}\,dx = \infty$
+for every $n$, so no rearrangement is available. Worse, for $O$ the series
+$\sum (-x^2)^n$ converges only for $\norm{x} < 1$ while $1/(1+x^2)$ is integrable on
+all of $\RR$: the functional is applied to the analytic continuation, not to the series.
+The generating function is doing work here beyond bookkeeping, which is why the
+identity is a statement about the \emph{middle rung} of the decategorification
+diagram and not about coefficients.
+\end{remark}
+
+\section{The missing row}
+
+Day convolution along a monoidal index category $(\mathcal{A}, \otimes)$ is the
+unique monoidal structure making the Yoneda embedding strong monoidal, and
+$\mathcal{A}$ is an input. Varying it varies the decategorified product. The table
+of \texttt{q-dirichlet.tex} \S2 reads:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\mathcal{A}$ & Day convolution & decategorification \\
+\midrule
+$(\FinSet^{\iso}, \sqcup)$ & species product & $\sum a_n x^n/n!$ (Cauchy/EGF) \\
+$(\NN_{>0}, \times)$ & Dirichlet convolution & $\sum a_n n^{-s}$ \\
+$(\FinSet^{\iso}_{\neq\emptyset}, \times)$ & arithmetic product & $\sum a_n n^{-s}/n!$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The row the present question is about is not there. Let $\NN^{\delta}$ be the
+\emph{discrete} monoid $(\NN, +)$, that is $\FinSet^{\iso}$ with every
+non-identity automorphism deleted.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+$\mathcal{A}$ & Day convolution & decategorification \\
+\midrule
+$(\NN^{\delta}, +)$ & Cauchy product of $\Set$-sequences & $\sum a_n x^n$ (OGF) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}[\emph{ours}]\label{prop:row}
+The two rows $(\NN^{\delta},+)$ and $(\FinSet^{\iso},\sqcup)$ differ only in whether
+the index category remembers $\Aut([n]) = S_n$, and the two decategorifications
+differ only by the divisor $n! = \norm{S_n}$. Hence $O$ and $E$ of
+Proposition~\ref{prop:obs} are one sequence of shapes, $a_n = 1$, decategorified
+along two index categories related by the inclusion
+$\NN^{\delta} \hookrightarrow \FinSet^{\iso}$.
+\end{proposition}
+
+This is the correct statement but it is not the most useful one, because it makes the
+difference live in the \emph{functor}
+$\mathcal{A} \mapsto {}$ (series ring) rather than in the objects. The next section
+moves the difference into the containers, where it can be seen.
+
+\section{$O$ and $E$ are $\List$ and $\Bag$}
+
+Recall the two species of Joyal \cite{Joyal81}, in the notation of
+Bergeron--Labelle--Leroux \cite{BLL}:
+\[
+  L[n] = \{\text{linear orders on } [n]\},\quad \norm{L[n]} = n!,
+  \qquad
+  E[n] = \{\ast\},\quad \norm{E[n]} = 1 .
+\]
+Their exponential generating functions are
+\[
+  \sum_{n\ge0} \norm{L[n]}\frac{x^n}{n!} = \sum_{n\ge 0} x^n = \frac{1}{1-x} = O(x),
+  \qquad
+  \sum_{n\ge0} \norm{E[n]}\frac{x^n}{n!} = e^x = E(x).
+\]
+
+\begin{proposition}[\emph{ours}, and immediate]\label{prop:listbag}
+$O$ and $E$ are both exponential generating functions. $O$ is the EGF of the species
+of linear orders; $E$ is the EGF of the species of sets. The ``ordinary versus
+exponential'' distinction of \S2 is the same distinction as ``$L$ versus $E$'', seen
+from the other side.
+\end{proposition}
+
+Containerwise, with $(S \con P)$ denoting shapes $S$ and positions $P$:
+\[
+  \List = \bigl(\NN \con n \mapsto [n]\bigr), \qquad
+  \llbracket \List \rrbracket X = \sum_{n\ge 0} X^{n},
+\]
+the free monoid, and $\Bag$ is the same container with the $S_n$-action on positions
+divided out,
+\[
+  \llbracket \Bag \rrbracket X = \sum_{n \ge 0} X^{n}/S_n ,
+\]
+a \emph{quotient container} in the sense of Kock \cite{Kock}: a polynomial functor
+over groupoids rather than over sets. So:
+
+\begin{center}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+container & species & EGF & $\int_\RR \cdot(-x^2)$ \\
+\midrule
+$\List$ & $L$, linear orders & $1/(1-x)$ & $\pi = \Gamma(\tfrac12)^2$ \\
+$\Bag$ & $E$, sets & $e^x$ & $\sqrt{\pi} = \Gamma(\tfrac12)^1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+This is the row of \texttt{q-container.tex} \S``Related work'' that names Kock's
+species/quotient-container bridge as ``the structural model to imitate''. The
+present note is a small instance of that bridge in which the imitation can be
+carried out completely, because both sides are one-dimensional.
+
+\section{Borel is the de-quotienting map}
+
+The reason the two containers are comparable at all is that $\List$'s series is the
+Laplace transform of $\Bag$'s. For $\mathrm{Re}\,x < 1$,
+\begin{equation}\label{eq:borel}
+  O(x) \;=\; \frac{1}{1-x} \;=\; \int_0^\infty e^{-t} e^{xt}\,dt \;=\; \int_0^\infty e^{-t}E(xt)\,dt,
+\end{equation}
+and the mechanism is coefficientwise: $\int_0^\infty e^{-t}t^n\,dt = n! = \norm{L[n]}$.
+The Gamma integral is precisely what restores the $S_n$ that $\Bag$ divided out.
+
+\begin{proposition}[\emph{ours}]\label{prop:two-gammas}
+Substituting $x \mapsto -x^2$ in \eqref{eq:borel} and exchanging the order of
+integration gives
+\[
+  \int_\RR O(-x^2)\,dx
+  = \int_0^\infty e^{-t}\Bigl(\int_\RR e^{-tx^2}\,dx\Bigr) dt
+  = \int_0^\infty e^{-t}\sqrt{\pi/t}\,\,dt
+  = \sqrt{\pi}\,\Gamma(\tfrac12)
+  = \Gamma(\tfrac12)^2 .
+\]
+\end{proposition}
+
+The two factors of $\Gamma(\tfrac12)$ have visibly different sources: the inner
+Gaussian supplies one, and the $t^{-1/2}$ left behind by the Gaussian scaling
+$x \mapsto x/\sqrt{t}$ is eaten by the Borel integral to supply the other. So the
+$\pi$ of the $\List$ row is the $\sqrt{\pi}$ of the $\Bag$ row multiplied by the cost
+of de-quotienting.
+
+\section{The theorem}
+
+Proposition~\ref{prop:two-gammas} is one step of a family. Let
+\[
+  F_s(z) \;=\; \sum_{n \ge 0} \frac{z^n}{\Gamma(n+1)^s}
+  \;=\; \sum_{n\ge0}\frac{z^n}{(n!)^s},
+  \qquad s \in \ZZ_{\ge 0},
+\]
+so that $F_0 = O$, $F_1 = E$, and $F_2(z) = {}_0F_1(;1;z)$ with
+$F_2(-x^2) = J_0(2x)$. Dividing by $n!$ once more is one more $S_n$-quotient taken.
+
+\begin{theorem}[\emph{ours}]\label{thm:main}
+For $m \ge 2$ and $s \ge 0$,
+\[
+  \int_0^\infty F_s(-x^m)\,dx
+  \;=\; \frac{\pi}{m\sin(\pi/m)}\cdot\Gamma\!\bigl(1 - \tfrac1m\bigr)^{-s},
+\]
+in the sense of the Mellin regularisation below. In particular at $m = 2$,
+\[
+  \boxed{\;\int_{\RR} F_s(-x^2)\,dx \;=\; \Gamma(\tfrac12)\,\Gamma(\tfrac12)\cdot\Gamma(\tfrac12)^{-s}
+  \;=\; \Gamma(\tfrac12)^{\,2-s} \;=\; \pi^{(2-s)/2}.\;}
+\]
+\end{theorem}
+
+\begin{proof}
+Ramanujan's master theorem in the form
+$\int_0^\infty x^{\sigma-1}\sum_{k\ge0}(-1)^k\varphi(k)x^k\,dx = \Gamma(\sigma)\Gamma(1-\sigma)\varphi(-\sigma)$,
+valid for $\varphi$ analytic in a right half-plane of suitable growth and
+$0 < \mathrm{Re}\,\sigma < 1$. Substitute $u = x^m$, so $dx = \tfrac1m u^{1/m-1}du$:
+\[
+  \int_0^\infty F_s(-x^m)\,dx = \frac1m\int_0^\infty u^{\sigma-1}F_s(-u)\,du,
+  \qquad \sigma = \tfrac1m \in (0,1).
+\]
+Here $\varphi(k) = \Gamma(k+1)^{-s}$, which is entire since $1/\Gamma$ is entire, so
+$\varphi(-\sigma) = \Gamma(1-\tfrac1m)^{-s}$. The reflection formula gives
+$\Gamma(\sigma)\Gamma(1-\sigma) = \pi/\sin(\pi\sigma)$, and the stated formula follows.
+At $m = 2$ we have $\sigma = \tfrac12$, $\pi/\sin(\pi/2) = \pi = \Gamma(\tfrac12)^2$,
+and $\varphi(-\tfrac12) = \Gamma(\tfrac12)^{-s}$; doubling for the two-sided integral
+cancels the $1/m = \tfrac12$.
+\end{proof}
+
+\begin{remark}[what is special about $m = 2$, i.e.\ about the \emph{pair}]\label{rem:m2}
+The two $\Gamma$-factors in Theorem~\ref{thm:main} are $\Gamma(\tfrac1m)\Gamma(1-\tfrac1m)$
+from the reflection formula and $\Gamma(1-\tfrac1m)^{-s}$ from the $n!$-divisions.
+At $m = 2$, and only there, $\tfrac1m = 1 - \tfrac1m$: the self-dual point of
+$\sigma \mapsto 1-\sigma$. That is the unique exponent at which the whole answer is a
+power of a single number rather than a product of two unrelated ones --- and hence
+the unique one at which the pattern ``$\pi$, then $\sqrt{\pi}$'' is visible at all.
+Containerwise, $x^2$ is $y \otimes y$, the \emph{pair}: substituting the pair container
+is what places the Mellin exponent at the self-dual point.
+\end{remark}
+
+\begin{remark}[verification, and where convergence stops]\label{rem:verify}
+Numerically (\texttt{mpmath}, 25--30 digits): $s = 0$ gives $\pi$ \OK;
+$s = 1$ gives $\sqrt{\pi}$ \OK; $s = 2$ gives $1 = \Gamma(\tfrac12)^0$ \OK, as
+$\int_\RR J_0(2x)\,dx = 1$, Abel-convergent and confirmed by damping
+$e^{-\varepsilon x}$ with $\varepsilon = 2^{-1},\dots,2^{-5}$
+($0.9701, 0.9923, 0.9981, 0.9995, 0.9999$). For $m = 3$, $s = 1$ the formula reduces
+to $\Gamma(4/3) = \Gamma(1/3)/3$, confirmed symbolically by the reflection formula \OK.
+
+For $s \ge 3$ the integral is \emph{not} absolutely convergent and need not be
+conditionally convergent either: ${}_0F_{s-1}(;1,\dots,1;-x^2)$ oscillates in
+$x^{2/s}$, so it is not periodic and ordinary oscillatory quadrature does not apply.
+The theorem's claim for $s \ge 3$ is a claim about the Mellin/Abel-regularised value,
+which is what Ramanujan's master theorem computes. This is the same caveat as
+Remark~\ref{rem:termwise} one level up: the identity is about the analytic object,
+not about any convergent sum or integral of pieces.
+\end{remark}
+
+\begin{corollary}[the reading]\label{cor:reading}
+Write $\Gamma(\tfrac12)^{2-s}$ as $\Gamma(\tfrac12)^2 \cdot \Gamma(\tfrac12)^{-s}$. The
+$2$ is geometry --- the reflection formula at the self-dual exponent forced by the
+pair container --- and the $-s$ is combinatorics: \emph{each $S_n$-quotient taken
+costs exactly one factor of $\Gamma(\tfrac12)$.} The $\List \to \Bag$ step of \S3 is
+$s = 0 \to 1$.
+\end{corollary}
+
+This is the kind of statement the programme box of \texttt{q-container.tex} \S``The
+programme'' asks for: a coefficient that looks arbitrary at the analytic level
+($\pi$ here, $\sqrt{\pi}$ there) forced at the container level, by counting
+quotients.
+
+\section{Two obstructions}
+
+Neither of the following is a gap in Theorem~\ref{thm:main}, which is a theorem about
+series. Both are gaps in the attempt to make the \emph{whole} statement live at the
+container level, and both should be recorded before the reading of
+Corollary~\ref{cor:reading} is believed to be more than suggestive.
+
+\subsection{$\Poly$ has no additive inverses, so $-x^2$ is not an object}
+
+$\Poly$, the category of polynomial endofunctors on $\Set$ under $\sqcup$ and
+$\otimes$, is a rig category: there is no additive inverse of $y \otimes y$, and
+$-x^2$ names no object. Likewise $\Cont_q$. The substitution $F \mapsto F(-x^2)$ is
+therefore not container composition $\con$ but composition in the ring of
+\emph{virtual} species \cite{Joyal86,Yeh}, that is in the Grothendieck ring $K_0$ of
+the species category, where formal differences exist.
+
+\begin{question}\label{q:k0}
+Does $\Cont_q$ have a usable $K_0$? Specifically: is the Grothendieck group of
+$q$-containers under $+$ (coproduct) a ring under the product of
+\texttt{q-container.tex} Def.~\textup{(}product of containers\textup{)}, and does the $q$-series map
+$f_C(x) = \sum_s x^{\dim P s}$ extend to it as a ring homomorphism into
+$\ZZ[[x]]$?
+\end{question}
+
+\begin{warning}\label{warn:k0}
+This is the same shape of failure as the divergence section of
+\texttt{q-container.tex}: containers resisted Hall convolution because the
+construction needed is a convolution on a stack rather than a Day convolution, and
+they resist subtraction because $\Poly$ is a rig and not a ring. The two should not
+be assumed independent. In particular, do not take the alternating signs of
+$F_s(-x^2)$ as evidence of anything container-theoretic until
+Question~\ref{q:k0} is settled.
+\end{warning}
+
+\subsection{$\int_\RR$ is a second decategorification, not a container operation}
+
+The table of \texttt{q-container.tex} \S``decategorification'' lists one operation
+per rung and every one of them is algebraic: coproduct, product, Day convolution,
+Hall product, derivative $\partial$ (hyperplanes, decategorifying to the Jackson
+$D_q$), shift $\sigma$, $\mathrm{Ind}/\mathrm{Res}$. The species derivative is
+pointing --- the one-hole context, the zipper --- and it has a container meaning.
+Integration in the sense used here does not: $\int_\RR$ is a measure-theoretic
+functional on the middle rung, not the formal antiderivative, and the composite
+\[
+  \text{container} \;\longrightarrow\; \text{series} \;\longrightarrow\; \text{number}
+\]
+factors the decategorification into two stages of which only the first is structural.
+
+The nearest precedent is Spivak. In \cite{SpivakEntropy} and
+\cite{HosgoodSpivak} a Dirichlet polynomial is read as a set-theoretic bundle, hence
+as an empirical distribution, and assigned a Shannon entropy --- a number extracted
+from a polynomial functor by a functional that is not one of $\Poly$'s own
+operations, and which is nonetheless functorial where it needs to be. That is the
+same shape of move as the one made here, and it is the right citation for it.
+
+\begin{conjecture}[\emph{ours}, unverified]\label{conj:compat}
+There is a compatibility statement of the following form. Let $\mathcal{B}$ denote
+the Borel/Laplace transform of \eqref{eq:borel}, viewed as the de-quotienting map
+from symmetric to rigid structures, and let
+$\Phi(F) = \int_\RR F(-x^2)\,dx$. Then
+$\Phi \circ \mathcal{B} = \Gamma(\tfrac12)\cdot\Phi$ on the relevant
+domain; Theorem~\ref{thm:main} is the restriction of this to the family $F_s$.
+\end{conjecture}
+
+If Conjecture~\ref{conj:compat} is right it is more than the entropy story has: a
+functional that is \emph{not} a container operation nevertheless intertwining with a
+map that \emph{is} one, by a single scalar. That scalar is $\Gamma(\tfrac12)$, and
+the reason it is $\Gamma$ is that $\Gamma$ is where $n!$ lives.
+
+\section{Next}
+
+\begin{enumerate}[nosep]
+  \item \textbf{Settle Question~\ref{q:k0}.} This is the gate. Until $K_0$ of
+        $\Cont_q$ exists there is no $q$-analogue of anything in this note, because
+        the minus sign is unavailable.
+  \item \textbf{The $q$-analogue of Theorem~\ref{thm:main}.} The $q$-side of
+        $F_s$ should be $\sum z^n/\norm{\GL_n(\FF_q)}^s$ --- the divisor of the
+        $q$-Dirichlet series of \texttt{q-dirichlet.tex} --- and the question is
+        what replaces $\Gamma(\tfrac12)$. Jackson's $q$-integral is the obvious
+        candidate for $\int$, and $\Gamma_q$ for $\Gamma$; whether the self-dual
+        point of Remark~\ref{rem:m2} survives $q$-deformation is the first thing
+        to check and is cheap.
+  \item \textbf{Prove or refute Conjecture~\ref{conj:compat}} on a domain large
+        enough to include a non-hypergeometric example. One such would settle
+        whether the statement is structural or an artefact of the family.
+  \item \textbf{Add the $(\NN^\delta,+)$ row} of \S2 to
+        \texttt{q-dirichlet.tex}, with the observation of
+        Proposition~\ref{prop:row}: its three rows all remember $S_n$ and the
+        fourth does not, which is the distinction the rest of this note is about.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{BLL} Fran\c{c}ois Bergeron, Gilbert Labelle and Pierre Leroux,
+\emph{Combinatorial Species and Tree-like Structures}, Encyclopedia of Mathematics
+and its Applications 67, Cambridge University Press, 1998.
+
+\bibitem{HosgoodSpivak} Tim Hosgood and David I.\ Spivak, \emph{Dirichlet
+polynomials and entropy}, arXiv:2107.04832.
+
+\bibitem{Joyal81} Andr\'e Joyal, \emph{Une th\'eorie combinatoire des s\'eries
+formelles}, Adv.\ Math.\ \textbf{42} (1981), 1--82.
+
+\bibitem{Joyal86} Andr\'e Joyal, \emph{Foncteurs analytiques et esp\`eces de
+structures}, in \emph{Combinatoire \'enum\'erative}, Lecture Notes in Math.\ 1234,
+Springer, 1986, 126--159. Virtual species.
+
+\bibitem{Kock} Joachim Kock, \emph{Data types with symmetries and polynomial
+functors over groupoids}, Proc.\ MFPS 28, ENTCS 286 (2012), 351--365.
+
+\bibitem{SpivakEntropy} David I.\ Spivak, \emph{Polynomial functors and Shannon
+entropy}, arXiv:2201.12878.
+
+\bibitem{Yeh} Yeong-Nan Yeh, \emph{The calculus of virtual species and $K$-species},
+in \emph{Combinatoire \'enum\'erative}, Lecture Notes in Math.\ 1234, Springer,
+1986, 351--369.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,1239 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\setlength{\emergencystretch}{2.5em}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz-cd}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!60!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{warning}[theorem]{Warning}
+\newtheorem{refuted}[theorem]{Refuted conjecture}
+\newtheorem{question}[theorem]{Question}
+
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\Set}{\cat{Set}}
+\newcommand{\FinSet}{\cat{FinSet}}
+\newcommand{\Vect}{\cat{Vect}}
+\newcommand{\finVect}{\cat{finVect}}
+\newcommand{\Cont}{\cat{Cont}}
+\newcommand{\Rep}{\mathrm{Rep}}
+\newcommand{\ext}[1]{\llbracket #1 \rrbracket}
+\newcommand{\con}{\triangleleft}
+\newcommand{\op}{\mathrm{op}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Nat}{Nat}
+\DeclareMathOperator{\GL}{GL}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\Ind}{Ind}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\Coind}{Coind}
+\DeclareMathOperator{\Infl}{Infl}
+\newcommand{\Repg}{\Rep_{k}(G)}
+\newcommand{\qbin}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{q}}
+\newcommand{\yon}{\mathsf{y}}
+
+\definecolor{okgreen}{rgb}{0.0,0.45,0.15}
+\definecolor{nored}{rgb}{0.65,0.0,0.0}
+\newcommand{\OK}{\textcolor{okgreen}{\textbf{confirmed}}}
+\newcommand{\NO}{\textcolor{nored}{\textbf{refuted}}}
+
+\title{\bfseries Containers over a Finite Field\\[0.4em]
+\large first definitions, two theorems, and one refuted conjecture}
+\author{Robin Langer \and Claude}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A container $S \con P$ (Abbott--Altenkirch--Ghani) is a set of shapes together
+with a set of positions for each shape; its extension
+$\ext{S \con P}X = \sum_{s} X^{P s}$ is a polynomial functor, and every strictly
+positive type arises this way. We observe that a container is a piece of
+\emph{$\FF_1$-linear algebra}: positions form a set, and the symmetry group of $n$
+positions is $S_n = \GL_n(\FF_1)$. This document deforms that structure to a
+general finite field.
+
+The naive internalisation fails --- $\Vect$ is additive, so cartesian-polynomial
+functors on it collapse to linear ones --- and the correct move is to observe that
+a container is a \emph{set-indexed coproduct of corepresentables} and to change
+only the base category. The resulting notion, the \emph{$q$-container}, has
+positions that are $\FF_q$-vector spaces and reindexing that is linear.
+
+We prove a representation theorem (Theorem~\ref{thm:A}), prove that linearising
+the shapes destroys the theory completely (Theorem~\ref{thm:B}), identify the
+derivative with the Jackson $q$-derivative (Theorem~\ref{thm:D}), and
+\emph{refute} our own conjecture that $q$-containers carry two derivatives
+(\S\ref{sec:refuted}) --- the refutation locating the interesting deformation not
+in $q$ but in the self-duality of the base category. All results are
+computationally verified by exact enumeration over $\FF_2$ and $\FF_3$;
+\S\ref{sec:status} records exactly which claims are proved, which are verified,
+and which remain open.
+
+\medskip
+\noindent\emph{Companion document:} \texttt{finite-field-duality.pdf}, which
+supplies the background on forms over $\FF_q$, the topos/abelian dichotomy, and
+the $q \to 1$ limit; references of the form ``FFD \S$n$'' point there.
+\end{abstract}
+
+\tableofcontents
+
+\section{Containers, and the observation that starts this}
+
+\begin{definition}[Container]
+A \emph{container} is a pair $S \con P$ where $S$ is a set of \emph{shapes} and
+$P : S \to \Set$ assigns to each shape a set of \emph{positions}. Its
+\emph{extension} is the functor $\Set \to \Set$
+\[
+  \ext{S \con P} X \;=\; \sum_{s : S} \bigl(P s \to X\bigr)
+  \;=\; \sum_{s:S} X^{P s},
+\]
+``choose a shape, then label every position with an element of $X$''.
+\end{definition}
+
+\begin{definition}[Container morphism]\label{def:contmor}
+A morphism $(S \con P) \to (T \con Q)$ is a pair
+\[
+  u : S \to T, \qquad f : \prod_{s : S} \bigl(Q(u\,s) \to P s\bigr):
+\]
+forward on shapes, \emph{backward} on positions. Its extension sends
+$(s, \varphi) \mapsto (u\,s,\; \varphi \circ f_s)$.
+\end{definition}
+
+\begin{theorem}[Representation theorem, AAG]\label{thm:aag}
+The extension functor $\Cont \to [\Set,\Set]$ is full and faithful: container
+morphisms are exactly the natural transformations between the extensions.
+\end{theorem}
+
+Containers are closed under $+$, $\times$, composition, $\Sigma$, $\Pi$ and
+fixpoints, so every strictly positive type is a container; the derivative
+$\partial(S \con P) = \bigl(\sum_s P s\bigr) \con \lambda(s,p).\,P s \setminus
+\{p\}$ gives one-hole contexts and Huet's zippers.
+
+\begin{remark}[What container morphisms cannot express]
+A morphism supplies \emph{one} reindexing per shape, applied uniformly to every
+labelling of that shape. Sorting chooses its permutation by inspecting values, so
+it is not natural in $X$; by Theorem~\ref{thm:aag} no sorting algorithm is a
+container morphism. This is a proof, not an intuition, and it is worth keeping in
+mind as the guide to what the formalism does and does not see.
+\end{remark}
+
+\subsection{Containers are \texorpdfstring{$\FF_1$}{F1}-linear algebra}
+
+Quotient containers, in which a group acts on the positions of each shape, are
+Joyal's analytic functors --- species. The symmetry group of $n$ positions is
+$S_n$. And $S_n = \GL_n(\FF_1)$ (FFD \S16). So:
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{A shape with a \emph{set} of positions is a shape
+with an $\FF_1$-vector space of positions. The positions have no addition, only
+relabelling. Container theory is the type theory of the field with one element.}}
+\end{center}
+
+The question of this document is what happens at a general $q$.
+
+\section{The obstruction: one cannot internalise na\"ively}\label{sec:obstruction}
+
+\begin{warning}\label{warn:collapse}
+There is no useful notion of ``container internal to $\Vect_{\FF_q}$''.
+\end{warning}
+
+By Gambino--Kock, containers are the polynomial functors of a locally cartesian
+closed category, built from $\Sigma$, $\Pi$ and pullback. $\Vect$ is not locally
+cartesian closed; it is additive, so finite products coincide with coproducts. In
+$\Set$, $X^{P s}$ is a product of $\lvert P s\rvert$ copies of $X$; in $\Vect$
+the product of $n$ copies of $V$ is $V^{\oplus n}$, so
+\[
+  \sum_s V^{\prod P s} \;=\; \bigoplus_s V^{\oplus \lvert P s\rvert}
+\]
+is \emph{linear} in $V$. Every polynomial degree above one is destroyed.
+
+\begin{remark}
+This is the topos/abelian dichotomy of FFD \S11: no nontrivial category is both a
+topos and abelian. Containers are topos-side technology --- disjoint coproducts,
+$\Sigma \dashv \Pi$, subobject lattices that are Boolean. $\Vect$ is on the
+abelian side. The deformation must therefore change something other than the
+ambient category, and identifying \emph{what} is the whole design problem.
+\end{remark}
+
+\section{The right formulation, and the definition}
+
+Read the extension again and notice what it actually is. Writing
+$\yon^{W} = \Hom(W,-)$ for the covariant functor corepresented by $W$,
+\[
+  \ext{S \con P} \;=\; \sum_{s : S} \yon^{P s}.
+\]
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{A container is a set-indexed coproduct of
+corepresentable functors.} Theorem~\ref{thm:aag} is then the Yoneda lemma: natural
+transformations $\yon^{W} \Rightarrow \yon^{W'}$ are maps $W' \to W$, which is
+exactly why container morphisms run backwards on positions.}}
+\end{center}
+
+That formulation says nothing about $\Set$ being the base. Change the base.
+
+\begin{definition}[$q$-container]\label{def:qcont}
+Fix a finite field $\FF_q$. A \emph{$q$-container} is a pair $S \con P$ with $S$ a
+finite set of \emph{shapes} and $P : S \to \finVect_{\FF_q}$ assigning to each
+shape a finite-dimensional \emph{position space}. Its \emph{extension} is the
+functor $\finVect_{\FF_q} \to \Set$
+\[
+  \ext{S \con P} V \;=\; \sum_{s \in S} \Hom_{\FF_q}(P s,\, V).
+\]
+\end{definition}
+
+\begin{definition}[$q$-container morphism]\label{def:qcontmor}
+A morphism $(S \con P) \to (T \con Q)$ is a pair
+\[
+  u : S \to T, \qquad
+  f \in \prod_{s \in S} \Hom_{\FF_q}\bigl(Q(u\,s),\, P s\bigr),
+\]
+the $f_s$ being \emph{linear} maps, backwards on positions. Composition is
+composition of the $u$'s and (contravariantly) of the $f$'s. Write $\Cont_q$ for
+the resulting category.
+\end{definition}
+
+Labelling a shape now means giving a \emph{linear map} from its position space
+into $V$: positions can be superposed, scaled and linearly recombined, and
+reindexing must respect that.
+
+\begin{remark}[Skeleton]
+$\finVect_{\FF_q}$ is skeletal up to isomorphism on dimensions, so a $q$-container
+is determined up to isomorphism by the multiset of dimensions
+$(\dim P s)_{s \in S}$. All computations below use this presentation.
+\end{remark}
+
+\begin{example}\label{ex:basic}
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $S = \{\ast\}$, $P\ast = \FF_q^{0}$: the constant functor $1$.
+  \item $S = \{\ast\}$, $P\ast = \FF_q^{1}$: the identity, since
+        $\Hom(\FF_q, V) \cong V$.
+  \item $S = \{\ast\}$, $P\ast = \FF_q^{d}$: the functor $V \mapsto V^{\oplus d}$
+        --- \emph{not} $V^{\otimes d}$ (see Warning~\ref{warn:collapse}).
+  \item $S = \NN$, $P n = \FF_q^{n}$: the ``$q$-list'' container,
+        $\ext{-}V = \coprod_n \Hom(\FF_q^n, V)$.
+\end{enumerate}
+\end{example}
+
+\begin{proposition}[$q \to 1$]
+Taking $\Vect_{\FF_1} = \FinSet_{\ast}$ with $\Hom_{\FF_1}$ the pointed maps
+(FFD \S16), Definitions~\ref{def:qcont} and \ref{def:qcontmor} specialise to
+pointed containers and pointed container morphisms.
+\end{proposition}
+
+\section{Theorem A: the representation theorem survives}
+
+\begin{theorem}\label{thm:A}
+The extension functor $\Cont_q \to [\finVect_{\FF_q}, \Set]$ is full and
+faithful. Explicitly, with $d_s = \dim P s$ and $e_t = \dim Q t$,
+\[
+  \Cont_q(C,D) \;\cong\; \Nat\bigl(\ext{C},\ext{D}\bigr)
+  \;\cong\; \prod_{s \in S} \; \sum_{t \in T} \Hom_{\FF_q}(Q t, P s),
+\]
+\[
+  \text{so that}\qquad
+  \bigl\lvert \Cont_q(C,D) \bigr\rvert \;=\; \prod_{s} \sum_{t} q^{\,e_t d_s}.
+\]
+\end{theorem}
+
+\begin{proof}
+Colimits in a functor category are pointwise, so $\Sigma$ is the coproduct in
+$[\finVect_q, \Set]$ and
+$\Nat\bigl(\sum_s F_s, G\bigr) \cong \prod_s \Nat(F_s, G)$. By Yoneda,
+$\Nat(\yon^{W}, G) \cong G(W)$. Hence
+\[
+  \Nat(\ext{C},\ext{D})
+  \;\cong\; \prod_{s} \ext{D}(P s)
+  \;=\; \prod_{s} \sum_{t} \Hom(Q t, P s).
+\]
+On the other side, Definition~\ref{def:qcontmor} gives
+$\Cont_q(C,D) = \sum_{u : S \to T} \prod_{s} \Hom(Q(u\,s), P s)$, and the
+distributive law of $\Pi$ over $\Sigma$ in $\Set$,
+\[
+  \prod_{s \in S} \sum_{t \in T} A(s,t)
+  \;\cong\; \sum_{u : S \to T} \; \prod_{s \in S} A\bigl(s, u\,s\bigr),
+\]
+identifies the two. Chasing the bijection shows it is exactly the extension map.
+\end{proof}
+
+\begin{remark}[Where the proof spends its budget]\label{rem:budget}
+The proof uses precisely two facts about the \emph{indexing}: that $\Sigma$ is a
+coproduct with disjoint, connected summands, and that $\Pi$ distributes over
+$\Sigma$. Both are topos-side properties of $\Set$, and neither holds for $\oplus$
+in $\Vect$. Theorem~\ref{thm:B} is the consequence.
+\end{remark}
+
+\subsection{Computational verification}
+
+Verified by exact enumeration, two methods, neither assuming Yoneda:
+\emph{exhaustive} search over all function families
+$\{\alpha_n : \ext{C}(\FF_q^n) \to \ext{D}(\FF_q^n)\}$ keeping the natural ones;
+and \emph{generic}, enumerating candidates by their value on
+$(s, \mathrm{id}_{P s})$, verifying naturality of each in full, and separately
+checking that every source element is $\ext{C}(\varphi)$ of a generic (so no
+natural family can escape the count).
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{ccccrrc}
+\toprule
+$q$ & $C$ & $D$ & $\max\dim$ & method & $\#$natural & $\lvert\Cont_q(C,D)\rvert$ \\
+\midrule
+2 & $(1)$ & $(1)$ & 1 & exhaustive & 2 & 2 \\
+2 & $(1)$ & $(1,1)$ & 1 & exhaustive & 4 & 4 \\
+2 & $(1,1)$ & $(1)$ & 1 & exhaustive & 4 & 4 \\
+2 & $(0,1)$ & $(1)$ & 1 & exhaustive & 2 & 2 \\
+2 & $(1,1)$ & $(1,1)$ & 1 & exhaustive & 16 & 16 \\
+3 & $(1)$ & $(1)$ & 1 & exhaustive & 3 & 3 \\
+3 & $(1)$ & $(1,1)$ & 1 & exhaustive & 6 & 6 \\
+2 & $(1)$ & $(2)$ & 2 & exhaustive & 4 & 4 \\
+2 & $(2)$ & $(1)$ & 2 & generic & 4 & 4 \\
+2 & $(2)$ & $(1,1)$ & 2 & generic & 8 & 8 \\
+2 & $(1,2)$ & $(2,1)$ & 2 & generic & 120 & 120 \\
+3 & $(2)$ & $(1)$ & 2 & generic & 9 & 9 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+A separate elementwise check ($q=2$, $C = D = (1,1)$) confirms that the map from
+container morphisms to natural families is injective and surjective, not merely
+equinumerous.
+
+\section{Theorem B: linearising the shapes destroys the theory}
+
+Definition~\ref{def:qcont} keeps the extension $\Set$-valued. Since
+$\Hom_{\FF_q}(P s, V)$ is itself a vector space, one is tempted to replace
+$\Sigma$ by $\oplus$ and land in $\Vect$. This is a mistake, and the failure is
+total rather than marginal.
+
+\begin{definition}
+The \emph{linear extension} of $S \con P$ is the $\FF_q$-linear functor
+$\ext{S \con P}_{\mathrm{lin}} V = \bigoplus_{s \in S} \Hom_{\FF_q}(P s, V)$.
+\end{definition}
+
+\begin{theorem}\label{thm:B}
+For finite $S$ and $T$,
+\[
+  \Nat\bigl(\ext{C}_{\mathrm{lin}}, \ext{D}_{\mathrm{lin}}\bigr)
+  \;\cong\; \Hom_{\FF_q}\Bigl( \bigoplus_{t \in T} Q t,\; \bigoplus_{s \in S} P s \Bigr),
+  \qquad
+  \text{of cardinality } q^{\left(\sum_s d_s\right)\left(\sum_t e_t\right)}.
+\]
+In particular the right-hand side depends only on the \emph{total position
+spaces}: the shape sets $S$ and $T$ are forgotten entirely.
+\end{theorem}
+
+\begin{proof}
+A natural transformation between additive functors is automatically
+$\FF_q$-linear in each component (use the scalar endomorphisms $\lambda\cdot\mathrm{id}$
+for homogeneity, and the diagonal and codiagonal $V \to V \oplus V \to V$ for
+additivity). Enriched Yoneda gives $\Nat(\Hom(W,-), G) \cong G(W)$ for linear $G$,
+and $\oplus$ is a biproduct, hence also a product, so
+\[
+  \Nat\Bigl(\bigoplus_s \Hom(P s,-), G\Bigr)
+  \;\cong\; \prod_s G(P s)
+  \;=\; \prod_s \bigoplus_t \Hom(Q t, P s)
+\]
+\[
+  \phantom{\Nat}\;\cong\; \prod_s \Hom\Bigl(\bigoplus_t Q t,\, P s\Bigr)
+  \;\cong\; \Hom\Bigl(\bigoplus_t Q t,\; \bigoplus_s P s\Bigr). \qedhere
+\]
+\end{proof}
+
+\begin{corollary}
+The linear extension functor is \textbf{neither full nor faithful}.
+\end{corollary}
+
+\begin{example}[Both failures at once, and cardinality is no guide]
+Take $q = 2$, $C = (1)$, $D = (1,1)$. Then
+$\lvert\Cont_q(C,D)\rvert = 4$ and $\lvert\Nat_{\mathrm{lin}}\rvert = 4$ --- the
+cardinalities agree --- yet the map between them is neither injective nor
+surjective, having image of size $3$:
+\begin{itemize}[nosep]
+  \item \emph{not faithful}: the two morphisms $(u = 0, f = 0)$ and
+        $(u = 1, f = 0)$ have the same linear extension, namely $0$. In $\Set$
+        these land in different summands and stay apart; in $\Vect$ the zero
+        vector is shared.
+  \item \emph{not full}: the ``diagonal'' map $(1,1) \in \Hom(\FF_2^{2}, \FF_2)$
+        is natural but is not the extension of any container morphism, since a
+        morphism must choose a single target shape per source shape.
+\end{itemize}
+\end{example}
+
+\begin{center}
+\small
+\begin{tabular}{ccrrrcc}
+\toprule
+$q$ & $C \to D$ & $\lvert\Cont_q\rvert$ & image & $\lvert\Nat_{\mathrm{lin}}\rvert$ & faithful & full \\
+\midrule
+2 & $(1) \to (1)$ & 2 & 2 & 2 & yes & yes \\
+2 & $(1) \to (1,1)$ & 4 & 3 & 4 & \NO & \NO \\
+2 & $(1,1) \to (1,1)$ & 16 & 9 & 16 & \NO & \NO \\
+2 & $(1) \to (1,1,1)$ & 6 & 4 & 8 & \NO & \NO \\
+3 & $(1) \to (1,1)$ & 6 & 5 & 9 & \NO & \NO \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{The representation theorem survives exactly
+as long as the shapes stay a set.} Positions may be linearised freely --- that is
+Theorem~\ref{thm:A}. Linearising the shapes replaces a disjoint union by a
+biproduct, natural transformations may then take linear combinations across
+different target shapes, and by Theorem~\ref{thm:B} the shape set is annihilated.
+This is Remark~\ref{rem:budget} made quantitative, and the topos/abelian
+dichotomy of FFD \S11 in the form of a cardinality identity.}}
+\end{center}
+
+\section{Counting, and the Jackson \texorpdfstring{$q$}{q}-derivative}
+
+\begin{proposition}[Counting series]\label{prop:count}
+$\bigl\lvert \ext{S \con P}(\FF_q^{n}) \bigr\rvert = \sum_{s} \bigl(q^{n}\bigr)^{d_s}$.
+Writing $x = q^{n}$, the counting series of a $q$-container is
+$f_C(x) = \sum_{s} x^{d_s}$, exactly parallel to
+$\lvert\ext{S \con P}(X)\rvert = \sum_s \lvert X\rvert^{\lvert P s\rvert}$ in
+$\Set$, under $\lvert X \rvert \leftrightarrow q^{n}$ and
+$\lvert P s\rvert \leftrightarrow \dim P s$.
+\end{proposition}
+
+Verified by direct enumeration for $q = 2$, $n \le 3$, $C \in \{(1),(2),(1,2)\}$.
+
+\begin{definition}[Derivative]\label{def:deriv}
+For a $q$-container $S \con P$, put
+\[
+  \partial(S \con P) \;=\; \Bigl(\textstyle\sum_{s} \{\text{hyperplanes of } P s\}\Bigr)
+  \;\con\; \bigl((s,H) \mapsto H\bigr),
+\]
+so a shape of $\partial C$ is a shape of $C$ together with a hyperplane of its
+position space, and the labelling forgets the missing direction.
+\end{definition}
+
+\begin{definition}[Jackson $q$-derivative]
+$D_q f(x) = \dfrac{f(qx) - f(x)}{(q-1)x}$, so that
+$D_q x^{d} = [d]_q\, x^{d-1}$ with $[d]_q = 1 + q + \cdots + q^{d-1}$.
+\end{definition}
+
+\begin{theorem}\label{thm:D}
+$f_{\partial C} = D_q f_C$. As $q \to 1$, $[d]_q \to d$, so $D_q \to d/dx$ and
+$\partial$ degenerates to the ordinary container derivative.
+\end{theorem}
+
+\begin{proof}
+$\FF_q^{d}$ has $\qbin{d}{d-1} = [d]_q$ hyperplanes, each of dimension $d-1$.
+\end{proof}
+
+Verified exactly for $q \in \{2,3\}$ and
+$C \in \{(1),(2),(3),(1,2),(2,2,3)\}$; e.g.\ $q = 3$, $C = (2,2,3)$ gives
+$f_C = x^{3} + 2x^{2}$ and $f_{\partial C} = 13x^{2} + 8x = D_q f_C$.
+
+\section{A refuted conjecture, and what it was really about}\label{sec:refuted}
+
+\begin{refuted}\label{conj:two}
+We conjectured that a $q$-container has \emph{two} derivatives ---
+$\partial_{\mathrm{sub}}$, restricting to a hyperplane of $P s$, and
+$\partial_{\mathrm{quot}}$, quotienting by a line --- exchanged by the polarity
+$W \mapsto W^{\perp}$ of FFD \S14, and merging at $q = 1$. The evidence offered
+was that the Gaussian Pascal recursion has two forms,
+\[
+  \qbin{n}{k} = \qbin{n-1}{k-1} + q^{k}\qbin{n-1}{k},
+  \qquad
+  \qbin{n}{k} = q^{\,n-k}\qbin{n-1}{k-1} + \qbin{n-1}{k},
+\]
+which coincide at $q = 1$.
+\end{refuted}
+
+\begin{proposition}[Refutation]
+Over $\FF_q$, $\partial_{\mathrm{sub}} \cong \partial_{\mathrm{quot}}$.
+\end{proposition}
+
+\begin{proof}
+$\qbin{d}{d-1} = \qbin{d}{1} = [d]_q$, so a shape has as many hyperplanes as
+lines; and $H \cong P s / \ell \cong \FF_q^{\,d-1}$ for every hyperplane $H$ and
+line $\ell$. Since a $q$-container remembers only the dimension of each position
+space, the two constructions give isomorphic $q$-containers.
+\end{proof}
+
+Confirmed computationally for $q \in \{2,3\}$ and all position dimensions
+$\le 3$. So the two Pascal recursions are not two derivatives; they are
+\emph{one derivative counted two ways}.
+
+\begin{remark}[The diagnosis]
+The conjecture silently assumed a base category in which subobjects and quotients
+are not interchangeable. $\Vect_{\FF_q}$ is semisimple: every short exact
+sequence splits, and the category is self-dual. The interesting deformation is
+therefore not $q$ but the \emph{failure of self-duality of the base}. Note that
+this is a different failure of splitting from the one in FFD Part~I: there, a
+\emph{form} on a semisimple category fails to split $V = W \perp W^{\perp}$; here
+it is the \emph{category itself} that splits too well. Conflating them was the
+error.
+\end{remark}
+
+\begin{conjecture}[Repaired]\label{conj:repaired}
+Let $\mathcal{A}$ be a finite $\FF_q$-linear abelian category and define
+$\mathcal{A}$-containers by Definition~\ref{def:qcont} with
+$P : S \to \mathcal{A}$. Then $\partial_{\mathrm{sub}} \cong
+\partial_{\mathrm{quot}}$ if and only if $\mathcal{A}$ is self-dual. In
+particular they separate over $\mathcal{A} = \Rep_{\FF_q}(\vec{A_n})$.
+\end{conjecture}
+
+\begin{example}[Smallest witness, hand-checked]
+Let $\mathcal{A} = \Rep_{\FF_q}(1 \to 2)$, with simples $S_1 = (\FF_q, 0)$,
+$S_2 = (0, \FF_q)$ and projective $P_1 = (\FF_q \xrightarrow{\ \mathrm{id}\ } \FF_q)$.
+The proper nonzero subobjects of $P_1$ are just $S_2$, since a subrepresentation
+$(W_1, W_2)$ needs $\mathrm{id}(W_1) \subseteq W_2$; and $P_1/S_2 = S_1$. As
+$S_1 \not\cong S_2$,
+\[
+  \partial_{\mathrm{sub}}(P_1) = S_2 \;\ne\; S_1 = \partial_{\mathrm{quot}}(P_1).
+\]
+\end{example}
+
+\begin{remark}
+One might expect the repair to the derivative and the enrichment of the
+composition (\S\ref{sec:hall}) to have a single cause, namely non-semisimplicity.
+They do not. Non-semisimplicity enriches the Hall algebra, but a category can be
+non-semisimple and still self-dual --- finite modules over a discrete valuation
+ring are, by Matlis duality --- in which case the two derivatives still coincide.
+The two phenomena sit on independent axes, tabulated in
+Table~\ref{tab:threebases}.
+\end{remark}
+
+\section{Composition, and where Hall--Littlewood enters}\label{sec:hall}
+
+\emph{The classical theorems quoted here are Hall's and Macdonald's; their
+application to $q$-containers is design, and nothing in this section has been
+verified computationally. An earlier draft of this section asserted that Day
+convolution has Hall-algebra structure constants. That is false, and
+\S\ref{sec:diverge} is the correction.}
+
+\subsection{Two candidate composition laws}
+
+\begin{definition}[Day convolution]\label{def:day}
+Let $(\mathcal{A}, \otimes)$ be a small monoidal category. The functor category
+$[\mathcal{A}, \Set]$ carries the monoidal structure
+\[
+  (F \star G)(c) \;=\; \int^{a,b} \mathcal{A}(a \otimes b,\, c) \times F(a) \times G(b),
+\]
+the unique one making the Yoneda embedding strong monoidal.
+\end{definition}
+
+\begin{example}[The species product]
+For $\mathcal{A} = (\FinSet_{\mathrm{bij}}, \sqcup)$ the coend collapses to
+$(F \star G)[n] = \sum_{A \sqcup B = [n]} F[A] \times G[B]$, the species product,
+which decategorifies to multiplication of exponential generating functions.
+\end{example}
+
+\begin{definition}[Hall algebra]\label{def:hall}
+Let $\mathcal{A}$ be an abelian category in which every object has finitely many
+subobjects and all $\Hom$ and $\mathrm{Ext}^1$ sets are finite. Its \emph{Hall
+algebra} $H(\mathcal{A})$ is the free $\ZZ$-module on isomorphism classes, with
+\[
+  [M]\cdot[N] \;=\; \sum_{[L]} g^{L}_{MN}\,[L],
+  \qquad
+  g^{L}_{MN} \;=\; \#\bigl\{\, U \subseteq L \;:\; U \cong N,\; L/U \cong M \,\bigr\}.
+\]
+So $g^{L}_{MN}$ counts \emph{subobjects with prescribed quotient} --- that is, all
+extensions of $M$ by $N$ with middle term $L$, split or not.
+\end{definition}
+
+These are genuinely different operations, and it is worth computing both in the
+smallest case before relying on either.
+
+\begin{proposition}[Day convolution over $\FF_q$]\label{prop:day}
+Let $\mathcal{G}_q = \bigsqcup_n B\GL_n(\FF_q)$ be the groupoid of
+finite-dimensional $\FF_q$-spaces and isomorphisms, monoidal under $\oplus$, and
+let $\delta_k$ be the point-functor supported on dimension $k$. Then
+\[
+  (\delta_k \star \delta_{n-k})(\FF_q^{n})
+  \;=\; \GL_n \big/ \bigl(\GL_k \times \GL_{n-k}\bigr),
+  \qquad
+  \text{of cardinality } \qbin{n}{k}\, q^{\,k(n-k)} :
+\]
+the number of \emph{ordered direct-sum decompositions} of $\FF_q^{n}$ into
+subspaces of dimensions $k$ and $n-k$.
+\end{proposition}
+
+\begin{example}
+$n = 2$, $k = 1$, $q = 2$: the formula gives $3 \cdot 2 = 6$, and directly,
+$\FF_2^{2}$ has $3$ lines, each with $2$ complements.
+\end{example}
+
+\begin{proposition}[The Hall product over $\FF_q$]\label{prop:thin}
+For $\mathcal{A} = \Vect_{\FF_q}$, $g^{\,n}_{k,\,n-k} = \qbin{n}{k}$, the number of
+subspaces of the given dimension. In the same case as above this is $3$, not $6$.
+\end{proposition}
+
+\begin{corollary}[Agreement, up to a twist, when the base is semisimple]
+Over $\Vect_{\FF_q}$ the two structure constants differ by the factor
+$q^{\,k(n-k)} = q^{\langle M, N\rangle}$, where
+$\langle M,N\rangle = \dim\Hom(M,N) - \dim\mathrm{Ext}^1(M,N)$ is the Euler form
+--- the number of complements to a fixed subspace. This is exactly the twist
+relating the Hall algebra to its twisted form, so over a semisimple base the
+discrepancy is cosmetic.
+\end{corollary}
+
+\subsection{Over a filtered base they diverge essentially}\label{sec:diverge}
+
+\begin{definition}[Discrete valuation ring, type of a module]
+A \emph{discrete valuation ring} $\mathcal{O}$ is a local principal ideal domain
+that is not a field; write $\mathfrak{m} = (\pi)$ and assume the residue field
+$\mathcal{O}/\mathfrak{m} \cong \FF_q$ is finite. Canonical examples:
+$\FF_q[[t]]$, and $\ZZ_p$ with $q = p$. Every finite $\mathcal{O}$-module is
+uniquely $M_\lambda \cong \bigoplus_i \mathcal{O}/(\pi^{\lambda_i})$ for a
+partition $\lambda$, its \emph{type}; write $n(\lambda) = \sum_i (i-1)\lambda_i$.
+\end{definition}
+
+Such a module is an $\FF_q$-space with a nilpotent operator: positions carrying a
+filtration, a ``shift with decay''. Setting $\pi = 0$ recovers
+$\Vect_{\FF_q}$, so this enriches Definition~\ref{def:qcont} rather than
+departing from it.
+
+\begin{example}[The computation that separates them]\label{ex:separate}
+Multiply the class of the simple module by itself.
+\[
+  \textbf{Hall:}\qquad
+  u_{(1)} \cdot u_{(1)} \;=\; u_{(2)} \;+\; (q+1)\, u_{(1,1)} .
+\]
+The term $u_{(2)}$ arises from the \emph{non-split} extension
+$\mathcal{O}/\pi \subset \mathcal{O}/\pi^{2}$; the coefficient $q+1$ counts the
+lines in $\FF_q^{2}$.
+\[
+  \textbf{Day convolution along } \oplus:\qquad
+  \delta_{(1)} \star \delta_{(1)} \;=\; q(q+1)\, \delta_{(1,1)},
+  \quad\text{and nothing else.}
+\]
+\end{example}
+
+\begin{proposition}\label{prop:daymisses}
+$(F \star G)(L)$ is empty unless $L \cong U \oplus W$ for some $U, W$ in the
+supports of $F$ and $G$. Hence Day convolution along $\oplus$ cannot see
+non-split extensions at all.
+\end{proposition}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Correction.} Day convolution along $\oplus$
+is the Cauchy product of $q$-species; its structure constants count
+\emph{splittings}, and agree with the twisted Hall constants only when the base is
+semisimple. It is \emph{not} the Hall product. Reaching the Hall algebra requires
+convolution along the span of short exact sequences,
+\[
+  \mathcal{A} \times \mathcal{A} \;\longleftarrow\; \mathcal{E} \;\longrightarrow\; \mathcal{A},
+  \qquad
+  \bigl(0 \to N \to L \to M \to 0\bigr) \;\longmapsto\; \bigl((M,N),\, L\bigr),
+\]
+pushing forward along the middle-term map --- the Ringel--Hall product as a
+convolution algebra on the stack of objects (Kapranov--Vasserot; Schiffmann's
+lectures). Day convolution deletes precisely the term that carries the content.
+
+\medskip
+\noindent\S\ref{sec:indres} identifies what the two products actually are:
+convolution along $\oplus$ induces from the \emph{Levi}, the Hall product induces
+from the \emph{parabolic}, and the discrepancy is the unipotent radical.}}
+\end{center}
+
+\subsection{The Hall side is Hall--Littlewood}
+
+\begin{definition}[Hall--Littlewood polynomials]
+$P_\lambda(x;t)$ is the basis of the ring $\Lambda$ of symmetric functions that is
+monic--triangular against the monomial basis for dominance order and orthogonal
+for the $t$-deformed Hall inner product. It interpolates: $P_\lambda(x;0) =
+s_\lambda$ and $P_\lambda(x;1) = m_\lambda$.
+\end{definition}
+
+\begin{theorem}[Hall; Macdonald, \emph{Symmetric Functions and Hall Polynomials},
+II.4 and III.3]\label{thm:HL}
+Let $\mathcal{A}_{\mathcal{O}}$ be the category of finite modules over a discrete
+valuation ring with residue field $\FF_q$. The structure constants
+$g^{\lambda}_{\mu\nu}(q)$ of Definition~\ref{def:hall} are polynomials in $q$ with
+integer coefficients --- the \emph{Hall polynomials} --- independent of which
+$\mathcal{O}$ realises the residue field, and
+\[
+  H(\mathcal{A}_{\mathcal{O}}) \;\xrightarrow{\ \sim\ }\; \Lambda,
+  \qquad
+  u_\lambda \;\longmapsto\; q^{-n(\lambda)}\,P_\lambda\!\left(x;\,q^{-1}\right)
+\]
+is a ring isomorphism. Equivalently
+$f^{\lambda}_{\mu\nu}(t) = t^{\,n(\lambda)-n(\mu)-n(\nu)} g^{\lambda}_{\mu\nu}(t^{-1})$
+are the Hall--Littlewood structure constants.
+\end{theorem}
+
+\begin{example}[Example~\ref{ex:separate} pushed through]
+With $n((1)) = n((2)) = 0$ and $n((1,1)) = 1$, the Hall identity becomes
+\[
+  P_1^{\,2} \;=\; P_{(2)} \;+\; \bigl(1 + q^{-1}\bigr) P_{(1,1)}
+  \;=\; P_2 + (1+t)\,P_{11}.
+\]
+At $t = 0$ this is $s_1^{2} = s_2 + s_{11}$; at $t = 1$ it is
+$m_1^{2} = m_2 + 2m_{11}$. Both correct. Note that the content sits in the
+$P_2$ term --- the non-split extension --- which is exactly what
+Proposition~\ref{prop:daymisses} deletes.
+\end{example}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Weakened conclusion.} $q$-containers with
+$\mathcal{O}$-module positions admit \emph{two} candidate composition laws. Day
+convolution along $\oplus$ gives the Cauchy product; convolution along short exact
+sequences gives the Hall product and hence, by Theorem~\ref{thm:HL},
+multiplication of Hall--Littlewood polynomials $P_\lambda(x;q^{-1})$. The two
+agree up to the Euler twist over $\Vect_{\FF_q}$ and disagree essentially the
+moment the positions carry a filtration. Which one deserves the name
+``composition of containers'' is open --- see
+Question~\ref{q:closed}.}}
+\end{center}
+
+\begin{remark}[Green's polynomials close the circle]
+The same $P_\lambda(x;q^{-1})$ carry the character theory of the groups whose
+$\FF_1$-shadow started this document:
+$p_\mu = \sum_\lambda Q^{\lambda}_{\mu}(q)\,P_\lambda(x;q^{-1})$ with
+$Q^{\lambda}_{\mu}(q) \in \ZZ[q]$ the unipotent character values of
+$\GL_n(\FF_q)$, and $Q^{\lambda}_{\mu}(1) = \chi^{\lambda}_{\mu}$, the character
+table of $S_n$. Composing with Kostka--Foulkes,
+$s_\lambda = \sum_\nu K_{\lambda\nu}(q)P_\nu(x;q)$, factors this as
+$Q = \chi^{\mathsf{T}}K$. So the Hall--Littlewood basis is the coordinate system
+in which Zelevinsky's tower $\bigoplus_n \Rep(\GL_n(\FF_q))$ --- degenerating to
+$\bigoplus_n \Rep(S_n)$, hence to species --- is legible.
+\end{remark}
+
+\subsection{Two independent axes}
+
+It is tempting to say that ``non-semisimple base'' is the single repair that both
+enriches the composition and separates the two derivatives of
+\S\ref{sec:refuted}. That is false, and the distinction matters.
+
+\begin{definition}[Self-dual category]
+$\mathcal{A}$ is \emph{self-dual} if there is an exact anti-equivalence
+$\mathcal{A}^{\op} \simeq \mathcal{A}$, that is, a duality exchanging subobjects
+and quotients. $\Vect_{\FF_q}$ is self-dual by $V \mapsto V^{*}$;
+$\mathcal{A}_{\mathcal{O}}$ is self-dual by Matlis duality
+$M \mapsto \Hom_{\mathcal{O}}(M, K/\mathcal{O})$, which preserves the type
+$\lambda$; $\Rep_{\FF_q}(\vec{A_2})$ is \emph{not}, as $S_1 \not\cong S_2$
+witnesses.
+\end{definition}
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccc}
+\toprule
+base $\mathcal{A}$ for positions & Hall algebra & self-dual? & $\partial_{\mathrm{sub}}$ vs $\partial_{\mathrm{quot}}$ \\
+\midrule
+$\Vect_{\FF_q}$
+  & divided powers, $\qbin{n}{k}$ & yes & coincide (\S\ref{sec:refuted}, proved) \\
+finite $\mathcal{O}$-modules
+  & $\Lambda$, Hall--Littlewood $P_\lambda(x;q^{-1})$ & yes (Matlis) & coincide (predicted) \\
+$\Rep_{\FF_q}(\vec{A_2})$
+  & $U_q(\mathfrak{n}^{-})$ for $\mathfrak{sl}_2$, noncomm. & \textbf{no} & \textbf{separate} (Conj.~\ref{conj:repaired}) \\
+\bottomrule
+\end{tabular}
+\caption{Filtration depth and failure of self-duality are independent. The middle
+row is non-semisimple, has a rich commutative Hall algebra, and still has
+coincident derivatives; only the bottom row separates them.}
+\label{tab:threebases}
+\end{table}
+
+\noindent
+So: \emph{filtration depth} buys Hall--Littlewood; \emph{failure of self-duality}
+buys two derivatives. Neither implies the other.
+
+\subsection{What is now open, and what to compute}
+
+\begin{question}\label{q:closed}
+$q$-containers are the coproducts of corepresentables. Is that class closed under
+Hall convolution? Day convolution along $\oplus$ preserves it, because
+$\yon^{U} \star \yon^{W} \cong \yon^{U \oplus W}$. The Hall product has no such
+easy answer, and if the class is not closed then ``Hall--Littlewood composition''
+is a statement about $q$-species, not about $q$-containers.
+\end{question}
+
+\begin{enumerate}[nosep]
+  \item Settle Question~\ref{q:closed}. This is the load-bearing one: it decides
+        whether \S\ref{sec:hall} is about containers at all.
+  \item Enumerate both products for $\mathcal{O} = \FF_2[t]/(t^{k})$, $k \le 3$,
+        and confirm Example~\ref{ex:separate} and the Hall polynomials
+        $g^{\lambda}_{\mu\nu}(q)$ for $\lvert\lambda\rvert \le 4$.
+  \item Confirm the middle row of Table~\ref{tab:threebases}: that Matlis duality
+        alone forces $\partial_{\mathrm{sub}} \cong \partial_{\mathrm{quot}}$,
+        isolating failure of self-duality as the sole obstruction.
+  \item Check that Theorem~\ref{thm:A} is stable under change of base; the proof
+        used only that the shapes form a set.
+\end{enumerate}
+
+
+\section{Induction, restriction, and change of base}\label{sec:indres}
+
+The two most useful operations in representation theory are induction and
+restriction, and they are adjoint. This section shows that any such adjunction is
+already native to the container calculus, and that doing so names the discrepancy
+of \S\ref{sec:diverge}.
+
+\subsection{Adjunctions lift, with a variance flip}
+
+\begin{definition}[Change of base]
+For a functor $A : \mathcal{A} \to \mathcal{B}$ and a container $C = S \con P$ with
+positions in $\mathcal{A}$, write $A_{*}C = S \con (A \circ P)$, a container with
+positions in $\mathcal{B}$. On morphisms, $A_{*}(u, f) = (u, A f)$.
+\end{definition}
+
+\begin{theorem}\label{thm:lift}
+Let $A : \mathcal{A} \to \mathcal{B}$ and $B : \mathcal{B} \to \mathcal{A}$ with
+$B \dashv A$. Then $A_{*} \dashv B_{*}$ on containers:
+\[
+  \Cont_{\mathcal{B}}\bigl(A_{*}C,\, D\bigr)
+  \;\cong\;
+  \Cont_{\mathcal{A}}\bigl(C,\, B_{*}D\bigr).
+\]
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:A} both sides are products of sums of hom-sets:
+\begin{align*}
+  \Cont_{\mathcal{B}}(A_{*}C, D) &= \prod_{s}\sum_{t} \Hom_{\mathcal{B}}\bigl(Q t,\, A(P s)\bigr), \\
+  \Cont_{\mathcal{A}}(C, B_{*}D) &= \prod_{s}\sum_{t} \Hom_{\mathcal{A}}\bigl(B(Q t),\, P s\bigr),
+\end{align*}
+and $\Hom_{\mathcal{B}}(X, A Y) \cong \Hom_{\mathcal{A}}(B X, Y)$ is exactly
+$B \dashv A$. The bijection is natural in each factor, hence in $C$ and $D$.
+\end{proof}
+
+\begin{remark}[Why the variance flips]
+The \emph{left} adjoint on positions becomes the \emph{right} adjoint on
+containers, and conversely. This is forced by Definition~\ref{def:qcontmor}:
+container morphisms run backwards on positions, so an adjunction used on the
+position category is consumed in the opposite slot.
+\end{remark}
+
+\begin{proposition}[Extensions]\label{prop:extadj}
+If $A \dashv B$ then $\ext{A_{*}C} = \ext{C} \circ B$. Pushing positions along a
+left adjoint is precomposing the extension with its right adjoint.
+\end{proposition}
+
+\begin{proof}
+$\ext{A_{*}C}(W) = \sum_s \Hom_{\mathcal{B}}(A(P s), W) \cong \sum_s
+\Hom_{\mathcal{A}}(P s, B W) = \ext{C}(B W)$.
+\end{proof}
+
+\subsection{Induction and restriction}
+
+\begin{definition}
+For $H \leq G$ and a field $k$: $\Res^G_H : \Rep_k(G) \to \Rep_k(H)$ restricts the
+action; $\Ind_H^G = k[G] \otimes_{k[H]} - $ and $\Coind_H^G = \Hom_{k[H]}(k[G], -)$.
+One has $\Ind \dashv \Res \dashv \Coind$, and for $[G:H] < \infty$,
+$\Ind \cong \Coind$, so $\Res$ is \emph{biadjoint} to $\Ind$.
+\end{definition}
+
+\begin{corollary}\label{cor:indres}
+For $H \leq G$ of finite index, positions in $\Rep_k(-)$ give
+\[
+  \Ind_{*} \;\dashv\; \Res_{*} \;\dashv\; \Ind_{*},
+\]
+and, by Proposition~\ref{prop:extadj},
+\[
+  \ext{\Ind_{*}C} = \ext{C} \circ \Res,
+  \qquad
+  \ext{\Res_{*}C} = \ext{C} \circ \Ind .
+\]
+\end{corollary}
+
+Inducting the positions is restricting the values, and conversely: Frobenius
+reciprocity holds shape by shape. Counting, with $k = \FF_q$,
+\[
+  \bigl\lvert\Cont_{G}(C,D)\bigr\rvert
+  \;=\; \prod_{s}\sum_{t} q^{\,\dim \Hom_{G}(Q t,\, P s)},
+\]
+and in the semisimple case $\dim\Hom_G(M,N) = \langle \chi_M, \chi_N\rangle$: the
+container hom-set is computed by inner products of characters. Taking $G$ trivial
+recovers Theorem~\ref{thm:A}.
+
+\subsection{Parabolic versus Levi: what \S\ref{sec:diverge} was about}
+
+Let $G = \GL_n(\FF_q)$, let $P$ be the parabolic stabilising a $k$-dimensional
+subspace, $L = \GL_k \times \GL_{n-k}$ its Levi factor and $U$ its unipotent
+radical, so $P = L \ltimes U$.
+
+\begin{definition}[Harish-Chandra induction]
+$R_L^G = \Ind_P^G \circ \Infl_L^P : \Rep(L) \to \Rep(G)$: inflate along
+$P \twoheadrightarrow L$, killing $U$, then induce. Its adjoint $^{*}R^G_L$ takes
+$U$-invariants and restricts to $L$.
+\end{definition}
+
+\begin{proposition}\label{prop:parlevi}
+\[
+  [G:P] = \qbin{n}{k}, \qquad
+  [G:L] = \qbin{n}{k} q^{\,k(n-k)}, \qquad
+  [P:L] = \lvert U\rvert = q^{\,k(n-k)} .
+\]
+\end{proposition}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccl}
+\toprule
+operation & induces from & index & container side \\
+\midrule
+Harish-Chandra $R_L^G = \Ind_P^G \Infl$ & parabolic $P$ & $\qbin{n}{k}$ & Hall product \\
+ordinary $\Ind_L^G$ & Levi $L$ & $\qbin{n}{k}q^{k(n-k)}$ & Day conv.\ along $\oplus$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{The discrepancy of \S\ref{sec:diverge} is the
+unipotent radical.} Day convolution along $\oplus$ induces from the \emph{Levi}: it
+remembers a choice of complement, which is not canonical, and the redundancy is
+exactly $\lvert U\rvert = q^{k(n-k)}$. Harish-Chandra induction goes through the
+\emph{parabolic} and inflates $U$ away, which is what lets it see extensions rather
+than splittings. The factor I could previously only describe as an Euler-form twist
+is the order of the unipotent radical.}}
+\end{center}
+
+\begin{example}[$\GL_2(\FF_2)$]
+$\lvert G\rvert = 6$; $L$ is trivial so $[G:L] = 6$, the ordered pairs of
+complementary lines; $P = B$ has order $2$, so $[G:P] = 3$, the lines; and
+$\lvert U\rvert = 2 = q^{1}$.
+\end{example}
+
+\begin{remark}[Zelevinsky, and $q = 1$]
+Taking induction and restriction to be \emph{Harish-Chandra} induction and
+restriction along Levi factors and their unipotent subgroups is exactly what gives
+$\bigoplus_n \Rep(\GL_n(\FF_q))$ its structure as a positive self-adjoint Hopf
+algebra, decomposing as a tensor product of copies of the elementary one indexed by
+cuspidal representations (Zelevinsky). At $q = 1$ there is no unipotent radical to
+inflate away, the two rows of the table coincide, and one recovers the induction
+product $\Ind_{S_k \times S_{n-k}}^{S_n}$ on $\bigoplus_n \Rep(S_n)$ --- which is
+precisely the species product, i.e.\ Day convolution along $\sqcup$. The
+parabolic/Levi distinction is a $q$-phenomenon, and it vanishes for the same reason
+the two derivatives of \S\ref{sec:refuted} merge.
+\end{remark}
+
+\begin{remark}[The Hecke algebra]
+$\Ind_B^G \mathbf{1} = k[G/B] = k[\text{complete flags}]$ is a free module on a
+hom-set --- a container in the $k[-]$ sense of \S\ref{sec:hall} --- and
+$\End_G(\Ind_B^G \mathbf{1}) = H_n(q)$, the Hecke algebra, degenerating to $k[S_n]$
+at $q = 1$. So the Hecke algebra is the endomorphism algebra of the flag container.
+\end{remark}
+
+\begin{question}[Mackey]\label{q:mackey}
+The Mackey formula $\Res \circ \Ind = \bigoplus_{HgK} \Ind \circ \operatorname{conj}
+\circ \Res$ should lift to a distributive law between $\Ind_{*}$ and $\Res_{*}$. It
+is the compatibility that makes the PSH structure work, so if it lifts cleanly the
+container calculus carries both operations \emph{and} their interaction.
+\end{question}
+
+
+\section{A general programme: lifting Macdonald theory to containers}\label{sec:programme}
+
+\subsection{Decategorification}
+
+Proposition~\ref{prop:count} sends a $q$-container to a polynomial. That map is the
+bottom of a ladder:
+\begin{align*}
+  &\underbrace{\text{$q$-containers}}_{\text{functors, natural bijections}}
+  \;\longrightarrow\;
+  \underbrace{\text{symmetric functions}}_{\text{characters, if the positions carry a group action}} \\[0.4em]
+  &\qquad\longrightarrow\;
+  \underbrace{\text{$q$-series}}_{f_C(x) = \sum_s x^{\dim P s}}
+  \;\longrightarrow\;
+  \text{numbers}
+\end{align*}
+and it is a homomorphism for every operation we have:
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}@{}}
+\toprule
+container level & polynomial level \\
+\midrule
+coproduct $C + D$ & $f_C + f_D$ \\
+product $C \times D$ (Def.~\ref{def:prod}) & $f_C \cdot f_D$ \\
+Day convolution along $\oplus$ (Levi) & multiplication weighted by $q^{k(n-k)}$ \\
+Hall product (parabolic, \S\ref{sec:indres}) & Gaussian-binomial structure constants \\
+derivative $\partial$ (hyperplanes) & Jackson $D_q$ \\
+shift $\sigma$ (Def.~\ref{def:shift}) & $f(x) \mapsto f(qx)$ \\
+$\Ind_{*}$, $\Res_{*}$ (Cor.~\ref{cor:indres}) & multiplication, comultiplication \\
+$q \to 1$ & $d/dx$, binomials, ordinary generating functions \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+When the positions carry a group action the middle rung is not one-variable
+polynomials but the ring $\Lambda$ of symmetric functions, and decategorification is
+the character map: the Frobenius characteristic for $\bigoplus_n \Rep(S_n)$, and
+Zelevinsky's for $\bigoplus_n \Rep(\GL_n(\FF_q))$, in which Green's polynomials give
+the transition to the Hall--Littlewood basis (\S\ref{sec:hall}).
+
+\subsection{The programme}
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\textbf{Programme.} Every identity in the $q$- and
+$(q,t)$-theory of symmetric functions should be the shadow of a natural isomorphism
+of containers, and every container construction should decategorify to an identity.
+This is Joyal's species programme run at $q$: replace ``bijection of finite sets''
+by ``isomorphism of $q$-containers'' and ``generating function'' by ``$q$-series''.
+The payoff sought is not new identities but \emph{reasons} --- a coefficient that
+looks arbitrary at the polynomial level should be forced at the container level.}}
+\end{center}
+
+\subsection{A worked instance: the \texorpdfstring{$q$}{q}-Leibniz rule}
+
+\begin{definition}[Product of containers]\label{def:prod}
+$(S \con P) \times (T \con Q) = (S \times T) \con \bigl((s,t) \mapsto P s \oplus Q t\bigr)$,
+so that $\ext{C \times D} \cong \ext{C} \times \ext{D}$ pointwise and
+$f_{C \times D} = f_C f_D$.
+\end{definition}
+
+\begin{definition}[Shift]\label{def:shift}
+$\sigma C$ is the container with $\ext{\sigma C}V = \ext{C}(V \oplus \FF_q)$.
+Explicitly $\sigma(S \con P) = \bigl(\sum_s (P s)^{*}\bigr) \con \bigl((s,\varphi)
+\mapsto P s\bigr)$: each shape $s$ is repeated $q^{d_s}$ times, positions unchanged.
+Hence $f_{\sigma C}(x) = f_C(qx)$, and $\sigma$ preserves containers.
+\end{definition}
+
+The Jackson derivative does not satisfy the ordinary Leibniz rule; it satisfies
+\[
+  D_q(fg) \;=\; D_q(f)\,g \;+\; \sigma(f)\,D_q(g),
+  \qquad \sigma(f)(x) = f(qx),
+\]
+an asymmetry that is unmotivated at the level of polynomials. It is forced at the
+level of containers.
+
+\begin{theorem}[Categorified $q$-Leibniz]\label{thm:leibniz}
+For $q$-containers $C, D$,
+\[
+  \partial(C \times D) \;\cong\; \partial C \times D \;+\; \sigma C \times \partial D .
+\]
+\end{theorem}
+
+\begin{proof}
+Both $\partial$ and $\times$ distribute over $+$, so it suffices to take
+$C$ and $D$ with one shape each, of position dimensions $d$ and $e$. Then
+$C \times D$ has the single shape of dimension $d+e$, so the left side has
+$\qbin{d+e}{d+e-1} = [d+e]_q$ shapes, all of position dimension $d+e-1$. On the
+right, $\partial C \times D$ contributes $[d]_q$ shapes and $\sigma C \times
+\partial D$ contributes $q^{d}[e]_q$, again all of dimension $d+e-1$. The two counts
+agree by
+\[
+  [d+e]_q \;=\; [d]_q + q^{d}\,[e]_q . \qedhere
+\]
+\end{proof}
+
+Verified by enumeration in all $50$ cases with $q \in \{2,3\}$ and position
+dimensions up to $4$; in the same $50$ cases the untwisted rule
+$\partial(C\times D) = \partial C \times D + C \times \partial D$ \emph{fails},
+so the shift is doing real work.
+
+\begin{remark}[Why the twist]
+Differentiating the second factor puts the hole in $D$; the $C$ half of the
+structure has then already absorbed the extra dimension, and $\sigma C$ records
+exactly that. The asymmetry of the $q$-Leibniz rule is a statement about
+\emph{where the hole is}, which is invisible once one has passed to polynomials.
+This is the programme working as intended.
+\end{remark}
+
+\subsection{Targets}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.26\textwidth}@{}}
+\toprule
+identity & expected container statement & status \\
+\midrule
+$q$-Leibniz & Theorem~\ref{thm:leibniz} & \OK{} proved, verified \\
+$q$-Pascal & split the Grassmannian container on a vector & known geometrically \\
+$q$-binomial theorem & a decomposition of $\sigma^{n}$ & open \\
+chain rule $\partial(C \circ D)$ & no clean $q$-chain rule exists & open \\
+Pieri, Littlewood--Richardson & Hall polynomials, \S\ref{sec:hall} & open \\
+Macdonald $P_\lambda(x;q,t)$ & needs a second parameter & \S\ref{sec:ceiling} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The chain rule deserves emphasis: containers \emph{do} satisfy
+$\partial(C \circ D) = (\partial C \circ D)\times \partial D$, and there is no clean
+$q$-analogue of the chain rule for $D_q$. Either container composition deforms so as
+to repair it, or the failure has a structural cause. Both answers say something the
+polynomial picture cannot.
+
+\subsection{The two-parameter ceiling}\label{sec:ceiling}
+
+\begin{warning}
+Macdonald's parameters are $(q,t)$ and \emph{neither is the field size}. In the
+dictionary of \S\ref{sec:hall}, $t_{\mathrm{Mac}} = q_{\mathrm{field}}^{-1}$ and
+$q_{\mathrm{Mac}} = 0$, since Hall--Littlewood is the $q_{\mathrm{Mac}} = 0$
+specialisation. We have one parameter, and it is the Hecke one.
+\end{warning}
+
+The ladder of \S\ref{sec:hall} suggests the rule: \emph{one parameter per
+deformation direction in the base category}. $\Vect_{\FF_q}$ has none and gives
+divided powers; finite $\mathcal{O}$-modules have one nilpotent direction and give
+Hall--Littlewood. Two parameters require a second direction, and there are three
+known ways to supply one.
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[Two nilpotent directions.] Positions in finite-length $\FF_q[x,y]$-modules ---
+the most container-native reading, ``positions in a two-dimensional array with decay
+in each direction''. This is Haiman's setting, via the punctual Hilbert scheme. The
+obstruction is sharp: $\FF_q[x,y]$-mod has global dimension $2$, so it is not
+hereditary; the Ringel--Hall product is still associative but Green's theorem fails,
+and polynomiality of the structure constants has no reason to survive. This is
+exactly why Haiman needed geometry rather than Hall-algebra combinatorics.
+\item[An elliptic curve.] Positions in $\mathrm{Coh}(E)$ for $E/\FF_q$ elliptic. The
+Hall algebra is Burban--Schiffmann's elliptic Hall algebra, identified by
+Schiffmann--Vasserot with the spherical double affine Hecke algebra, whose
+eigenbasis on symmetric functions is Macdonald's. The two parameters are the two
+Weil numbers $\alpha, \bar{\alpha}$ of the curve, with $\alpha\bar\alpha = q$. This
+route works; container theory contributes only packaging.
+\item[Decoupling the two ends.] $\ext{S \con P}V = \sum_s \Hom(P s, V)$ has
+\emph{two} argument places and we have deformed one. Every parameter found so far
+comes from $P$; the value slot $V$ has been left undeformed throughout. In the
+Macdonald operator
+$D_n = \sum_i \prod_{j \neq i} \frac{t x_i - x_j}{x_i - x_j}\,T_{q, x_i}$ the
+parameter $t$ sits in the coefficients (the finite Hecke parameter, from the
+positions) and $q$ sits in the shift operator $T_q$ --- which is
+Definition~\ref{def:shift}. That is the same split as in the double affine Hecke
+algebra, where $t$ is the finite Weyl parameter and $q$ the lattice-translation
+parameter. Currently $x = q^{\dim V}$ ties the shift to the field size; decoupling
+them is the open design question.
+\end{description}
+
+\noindent
+Honest assessment: the third route is the only one in which container theory does
+work rather than wrapping, and it is the least likely to be straightforward.
+Confidence that decoupling the value slot yields two parameters at all: perhaps
+$35\%$; that they are Macdonald's rather than an unrelated pair: lower.
+
+\section{Status of every claim}\label{sec:status}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{clcl}
+\toprule
+\# & claim & prior & outcome \\
+\midrule
+A & representation theorem (Thm.~\ref{thm:A}) & $85\%$ & \OK{} --- proved, plus 12 enumerations \\
+B & fails when shapes linearise (Thm.~\ref{thm:B}) & $85\%$ & \OK{} --- proved; stronger than stated \\
+D & derivative is Jackson $D_q$ (Thm.~\ref{thm:D}) & --- & \OK{} --- proved and verified \\
+-- & counting series (Prop.~\ref{prop:count}) & --- & \OK{} --- verified by enumeration \\
+C & two derivatives over $\FF_q$ & $60\%$ & \NO{} --- $\Vect_{\FF_q}$ is self-dual \\
+C$'$ & two derivatives over non-self-dual base & new & open; hand-checked on $\vec{A_2}$ \\
+H & Hall product over $\Vect_{\FF_q}$ (Prop.~\ref{prop:thin}) & --- & classical \\
+HL & \emph{Day convolution $=$ Hall product} & --- & \NO{} --- \S\ref{sec:diverge}: counts splittings \\
+HL$'$ & two composition laws, one Hall--Littlewood & new & Thm.~\ref{thm:HL} classical; unverified \\[-1pt]
+S & filtration depth $\perp$ self-duality failure & new & Table~\ref{tab:threebases}; middle row open \\
+L & adjunctions lift to containers (Thm.~\ref{thm:lift}) & new & proved; variance flips \\
+I & $\Ind_* \dashv \Res_* \dashv \Ind_*$ (Cor.~\ref{cor:indres}) & new & proved from Thm.~\ref{thm:lift} \\
+P & Day $=$ Levi, Hall $=$ parabolic (\S\ref{sec:indres}) & new & index computation; classical inputs \\
+K & gap between $\Cont_q$ and Kuhn's $\mathcal{F}(q)$ & --- & open \\
+M & Mackey as a distributive law (Q.~\ref{q:mackey}) & new & open \\
+LZ & categorified $q$-Leibniz (Thm.~\ref{thm:leibniz}) & new & \OK{} proved; 50 cases verified \\
+G & lifting Macdonald theory (\S\ref{sec:programme}) & new & programme; one parameter so far \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Related work}
+
+\begin{description}[leftmargin=1.6em,style=nextline,nosep]
+\item[Abbott, Altenkirch, Ghani.] \emph{Categories of Containers} (FoSSaCS 2003);
+\emph{Containers: Constructing Strictly Positive Types} (TCS 2005). The theory
+being deformed.
+\item[Gambino, Kock.] \emph{Polynomial functors and polynomial monads}. Source of
+the local cartesian closure requirement, hence of \S\ref{sec:obstruction}.
+\item[Kock.] \emph{Data types with symmetries and polynomial functors over
+groupoids}. The species/quotient-container bridge; the structural model to
+imitate.
+\item[Kuhn.] Generic representation theory of $\mathcal{F}(q)$, the category of
+functors $\finVect_{\FF_q} \to \Vect_{\FF_q}$. By Theorem~\ref{thm:B} this is the
+$\Vect$-valued setting, in which container structure collapses; determining what
+$\Cont_q$ looks like inside the $\Set$-valued analogue is open.
+\item[Zelevinsky.] $\bigoplus_n \Rep\bigl(\GL_n(\FF_q)\bigr)$ as a positive
+self-adjoint Hopf algebra, degenerating to $\bigoplus_n \Rep(S_n)$ --- symmetric
+functions, hence species --- at $q=1$. The representation-theoretic target.
+\item[Friedlander, Suslin.] Strict polynomial functors: the \emph{other}
+linearisation, with positions a set and values a vector space.
+\item[Ringel, Hall.] The algebra of Definition~\ref{def:hall}; noncommutative
+exactly when the base has non-split extensions and no self-duality.
+\item[Kapranov, Vasserot; Schiffmann.] The Hall product as convolution on the
+stack of objects, along the span of short exact sequences --- the construction
+that \S\ref{sec:diverge} says is needed in place of Day convolution.
+\item[Macdonald.] \emph{Symmetric Functions and Hall Polynomials}, II--III: Hall
+polynomials, the isomorphism $H(\mathcal{A}_{\mathcal{O}}) \cong \Lambda$, and
+Hall--Littlewood $P_\lambda(x;t)$. The source for Theorem~\ref{thm:HL}.
+\item[Green.] The unipotent character values $Q^{\lambda}_{\mu}(q)$ of
+$\GL_n(\FF_q)$ as the transition matrix from power sums to Hall--Littlewood,
+degenerating to the character table of $S_n$ at $q = 1$.
+\item[Langer.] PhD thesis (\texttt{\char`~/git/lean/thesis-tex}): Macdonald-level
+generalisation of the Kawanaka identity, with the Hall--Littlewood case $q=0$ as
+precedent. The nearest local expertise on the middle row of
+Table~\ref{tab:threebases}.
+\end{description}
+
+\section{Next}
+
+\begin{enumerate}[nosep]
+  \item \textbf{Question~\ref{q:closed}:} is the class of $q$-containers closed
+        under Hall convolution? This decides whether \S\ref{sec:hall} is a
+        statement about containers or only about $q$-species.
+  \item \textbf{$\mathcal{O}$-position containers.} Enumerate both composition
+        laws for $\FF_2[t]/(t^{k})$-modules, confirm Example~\ref{ex:separate},
+        and check the Hall polynomials against Theorem~\ref{thm:HL}.
+  \item \textbf{Settle Conjecture~\ref{conj:repaired}} by implementing
+        $\Rep_{\FF_q}(\vec{A_n})$, and confirm the middle row of
+        Table~\ref{tab:threebases}, isolating failure of self-duality as the sole
+        obstruction to $\partial_{\mathrm{sub}} \cong \partial_{\mathrm{quot}}$.
+  \item Check that Theorem~\ref{thm:A} is stable under change of base.
+  \item Determine whether $\Cont_q$ sits inside a $\Set$-valued analogue of
+        Kuhn's $\mathcal{F}(q)$, and measure the gap.
+  \item Ask whether a nondegenerate form on the position objects makes a
+        $q$-container self-dual, and whether FFD Theorem~14.4 then classifies such
+        structures into three families.
+\end{enumerate}
+
+\appendix
+\section{Reproducing the computations}
+
+\begin{verbatim}
+  q-bool/code/qcontainer.py   definitions, enumeration, both checkers
+  q-bool/code/experiments.py  the six experiments reported above
+  q-bool/code/FINDINGS.md     raw results
+
+  $ cd q-bool/code && python3 experiments.py
+\end{verbatim}
+
+\noindent
+All arithmetic is exact over prime fields; there is no sampling and no floating
+point. The exhaustive checker enumerates every function family and filters by
+naturality, making no use of the Yoneda lemma; the generic checker enumerates
+candidates by their value on $(s,\mathrm{id}_{P s})$, verifies naturality of each
+in full, and separately confirms that every element of the source is
+$\ext{C}(\varphi)$ applied to a generic.
+
+\end{document}
